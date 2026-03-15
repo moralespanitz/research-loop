@@ -1,389 +1,173 @@
-<p align="center">
-  <img src="doc/assets/header.png" alt="Research Loop — runs your research" width="720" />
-</p>
+# Research Loop
 
-<p align="center">
-  <a href="#quickstart"><strong>Quickstart</strong></a> &middot;
-  <a href="https://research-loop.dev/docs"><strong>Docs</strong></a> &middot;
-  <a href="https://github.com/moralespanitz/research-loop"><strong>GitHub</strong></a> &middot;
-  <a href="https://discord.gg/research-loop"><strong>Discord</strong></a>
-</p>
+Research Loop is a complete scientific research workflow for your coding agents, built on top of a set of composable "skills" and some initial instructions that make sure your agent uses them.
 
-<p align="center">
-  <a href="https://github.com/moralespanitz/research-loop/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" /></a>
-  <a href="https://github.com/moralespanitz/research-loop/stargazers"><img src="https://img.shields.io/github/stars/moralespanitz/research-loop?style=flat" alt="Stars" /></a>
-  <a href="https://discord.gg/research-loop"><img src="https://img.shields.io/discord/000000000?label=discord" alt="Discord" /></a>
-</p>
+## How it works
 
-<br/>
+It starts from the moment you open your coding agent and mention anything research-related. As soon as it sees that you're exploring a topic, it *doesn't* just start searching and dumping information. Instead, it steps back and asks you what you're really trying to figure out.
 
-## What is Research Loop?
+Once it's teased the research framing out of the conversation, it explores in parallel — papers, repos, debates, open problems — and shows you the landscape in a synthesis short enough to actually read and act on.
 
-# Open-source Agent OS for scientific researchers
+After you've picked a direction, your agent finds the gaps, runs them through a Carlini gate (one question at a time, waiting for your answers), and surfaces the ideas worth pursuing. Then it spins up parallel hypothesis lanes, applies gates between them, and kills the weak ones early.
 
-**If Claude Code is a _coding agent_, Research Loop is the _research environment_**
+Next up, once you say "go", it launches a *subagent-driven experiment loop* — proposing code mutations, running benchmarks, annotating results causally, and building a living knowledge graph that remembers what was tried and why it failed. It's not uncommon for the loop to run overnight and return 60+ annotated experiments by morning.
 
-Research Loop is a standalone terminal application that orchestrates AI agents to run the full scientific discovery cycle — from reading a paper to running reproducible experiments, building a living knowledge graph, and drafting your results.
+When you want to understand something deeply, just say "explain X." The `learn` skill activates the full MIT grad student methodology: 5 core mental models (one at a time), 3 field debates (both sides steel-manned), 5 diagnostic questions that expose memorization vs. real understanding, and a Socratic reverse test where you teach it back. Every gap you reveal gets logged to the lab notebook.
 
-It looks like a terminal workspace — but under the hood it has dual agents, experiment loop state machines, persistent knowledge graphs, and portable `.research` bundles.
+There's a bunch more to it, but that's the core of the system. And because the skills trigger automatically, you don't need to do anything special. Your agent just has Research Loop.
 
-**Manage hypotheses, not terminals.**
+## Sponsorship
 
-|        | Step              | Example                                                              |
-| ------ | ----------------- | -------------------------------------------------------------------- |
-| **01** | Point at a paper  | `research-loop start "https://arxiv.org/abs/2403.xxxxx"`             |
-| **02** | Review hypothesis | The Epistemic agent extracts the core claim. You approve or edit it. |
-| **03** | Run the loop      | The Empirical agent mutates code, benchmarks, annotates — overnight. |
+If Research Loop has helped you do work that matters and you are so inclined, consider [sponsoring the project](https://github.com/sponsors/moralespanitz).
 
-<br/>
+Thanks!
 
-> **COMING SOON: Workflow Registry** — Download and run entire research workflows with one command. Browse pre-built skill definitions — Ingestor, Experimenter, Replicator, Deep Learner — and import them into your workspace in seconds.
+— Alexander
 
-<br/>
+## Installation
 
-<div align="center">
-<table>
-  <tr>
-    <td align="center"><strong>Works<br/>with</strong></td>
-    <td align="center"><strong>Claude Code</strong><br/><sub>local CLI</sub></td>
-    <td align="center"><strong>GPT-4/5</strong><br/><sub>API key</sub></td>
-    <td align="center"><strong>Gemini</strong><br/><sub>API key</sub></td>
-    <td align="center"><strong>Ollama</strong><br/><sub>local</sub></td>
-    <td align="center"><strong>ArXiv</strong><br/><sub>ingest</sub></td>
-    <td align="center"><strong>MCP</strong><br/><sub>bridge</sub></td>
-  </tr>
-</table>
+### Claude Code (recommended)
 
-<em>If it outputs a metric, it can be benchmarked.</em>
-</div>
-
-<br/>
-
-## Research Loop is right for you if
-
-- ✅ You read ArXiv papers and spend **days translating them into runnable code**
-- ✅ You run **20+ experiments** and lose track of what you've tried and why things failed
-- ✅ You want experiments running **autonomously overnight**, but still want full scientific control
-- ✅ You want a **living knowledge graph** that remembers what failed and why — so you never repeat it
-- ✅ You want to **share reproducible experiments** as a portable bundle, not a pile of scripts
-- ✅ You're on modest hardware — a **MacBook or single consumer GPU** — not an H100
-
-<br/>
-
-## Features
-
-<table>
-<tr>
-<td align="center" width="33%">
-<h3>🧪 Dual-Agent Loop</h3>
-Epistemic agent reads theory and proposes hypotheses. Empirical agent writes code, runs benchmarks, and logs results. They run together, overnight, on your hardware.
-</td>
-<td align="center" width="33%">
-<h3>🧠 Living Knowledge Graph</h3>
-Every hypothesis tried, every result observed, every causal annotation for every failure — in a single human-readable Markdown file. Any agent or human can resume from it.
-</td>
-<td align="center" width="33%">
-<h3>📦 .research Bundles</h3>
-The portable unit of reproducible science. Everything needed to reproduce or continue an investigation, in a single ZIP-compatible archive. Like <code>.ipynb</code> — but for the full discovery cycle.
-</td>
-</tr>
-<tr>
-<td align="center">
-<h3>📚 Paper Library</h3>
-Ingest ArXiv URLs, DOIs, or local PDFs. Full-text search across your entire library. ArXiv RSS feed monitoring. Citation graph. Cross-session paper linking.
-</td>
-<td align="center">
-<h3>✍️ Writer Pane</h3>
-Draft paper sections from your experiment data. Scribe agent auto-populates Methods, Results, Related Work. Vim keybindings. LaTeX export.
-</td>
-<td align="center">
-<h3>💰 Cost Control</h3>
-Real-time LLM API spend in the dashboard. Per-session budget caps. Token tracking per agent. No runaway costs.
-</td>
-</tr>
-<tr>
-<td align="center">
-<h3>🔌 Model-Agnostic</h3>
-Claude Code (local CLI), GPT-4/5, Gemini, Ollama, LM Studio — any OpenAI-compatible endpoint. Configure per-agent.
-</td>
-<td align="center">
-<h3>🔬 Deep Learner</h3>
-Feed it a topic and your entire source corpus. It extracts expert mental models, maps field debates, generates deep-understanding questions, and tutors you through them.
-</td>
-<td align="center">
-<h3>🖥️ Bubble Tea TUI</h3>
-Full-screen terminal UI. Home, Ingest, Sessions, Dashboard. No browser required. Runs everywhere Go runs.
-</td>
-</tr>
-</table>
-
-<br/>
-
-## Problems Research Loop solves
-
-| Without Research Loop | With Research Loop |
-| --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| ❌ You read a promising paper and spend 2–3 days translating it into runnable code before running a single experiment. | ✅ `research-loop start <arxiv-url>` produces a running baseline in under 3 minutes. |
-| ❌ You run 40 experiments and can't remember which variants you tried or why the promising-looking one failed. | ✅ The knowledge graph logs every hypothesis, result, and causal annotation. Nothing is forgotten. |
-| ❌ You rerun experiments you already ran 3 weeks ago because you forgot the outcome. | ✅ Duplicate detection against the knowledge graph prevents redundant attempts automatically. |
-| ❌ You share results with a collaborator by emailing a ZIP of scripts and hoping they can reproduce it. | ✅ `research-loop export` produces a `.research` bundle that any researcher or agent can resume on any machine. |
-| ❌ Runaway experiment loops cost you hours of GPU time on dead-end mutations with no way to trace back why. | ✅ Backpressure checks auto-revert failing mutations. Cost tracking enforces session budgets. |
-| ❌ You have to be at your computer babysitting experiments instead of thinking about science. | ✅ The Experimenter runs loops autonomously on a schedule. You review results when you're ready. |
-
-<br/>
-
-## Why Research Loop is different
-
-|                                        |                                                                                                                                                 |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Checkpoint-based recovery.**         | Every loop state transition is persisted to `autoresearch.jsonl`. Crash, reboot, context reset — the loop resumes in under 10 seconds.          |
-| **Causal annotations, not just logs.** | The Epistemic agent writes *why* a hypothesis failed, not just that it did. The knowledge graph is a causal map, not a run log.                 |
-| **Domain-agnostic metrics.**           | Any CLI metric works: `val_bpb`, `val_loss`, NDCG@10, Sharpe ratio, Lighthouse score. Declare direction, parse `METRIC name=value` from stdout. |
-| **Plain-text persistence.**            | All state lives in Markdown and JSONL — human-readable, git-diffable, LLM-resumable. No databases. No proprietary formats.                      |
-| **Skills, not scripts.**               | Each autonomous capability is a self-contained skill with a SKILL.md, system prompt, tools, and guardrails. Composable, pausable, shareable.    |
-| **MCP bridge included.**               | Don't want to switch tools? The MCP server exposes Research Loop capabilities to Claude Code, OpenCode, Cursor, or any MCP host.                |
-
-<br/>
-
-## What Research Loop is not
-
-|                                      |                                                                                                                                                  |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Not an AGI research system.**      | The tool proposes. The researcher approves. The agent executes. Scientific judgment stays with you.                                               |
-| **Not a cloud product.**             | Local-first. Runs on a MacBook. No account required. No data leaves your machine unless you push a bundle.                                       |
-| **Not a coding agent.**              | Research Loop isn't a general-purpose coding assistant with research features bolted on. It's a research environment that happens to write code. |
-| **Not a GUI dashboard.**             | v0.1 is strictly CLI and Markdown-first. The TUI is a terminal workspace, not a web app.                                                         |
-| **Not a statistical analysis tool.** | Experiment execution, not significance testing. Bring your own stats.                                                                            |
-
-<br/>
-
-## Quickstart
-
-One binary. No database. No account.
+Clone the repo into your research workspace:
 
 ```bash
-# Install
-curl -fsSL https://research-loop.dev/install | sh
-
-# Initialize workspace
-research-loop init
-
-# Quickstart with karpathy/autoresearch (single-GPU overnight experiments)
-git clone https://github.com/karpathy/autoresearch
-cd autoresearch && uv run prepare.py        # one-time data prep
-
-research-loop start "https://arxiv.org/abs/2403.05821"
-# edit .research-loop/config.toml — set benchmark_command
-research-loop loop start --repo ./autoresearch
-```
-
-Or build from source:
-
-```bash
-git clone https://github.com/moralespanitz/research-loop.git
+git clone https://github.com/moralespanitz/research-loop
 cd research-loop
-go build ./cmd/research-loop
-./research-loop init
 ```
 
-> **Requirements:** Go 1.22+ · `claude` CLI or any OpenAI-compatible API key · Python + [uv](https://docs.astral.sh/uv/) for autoresearch
+The `.claude/` directory is picked up automatically by Claude Code. Open a new session and it's active.
 
-<br/>
-
-## The magic moment
-
-Works out of the box with [karpathy/autoresearch](https://github.com/karpathy/autoresearch) — a single-GPU nanochat training setup designed for exactly this kind of autonomous overnight experimentation.
+### Go binary (standalone CLI)
 
 ```bash
-# 1. Clone the baseline
-git clone https://github.com/karpathy/autoresearch
-cd autoresearch && uv run prepare.py   # one-time data prep, ~2 min
-
-# 2. Ingest the paper and extract a hypothesis
-research-loop start "https://arxiv.org/abs/2403.05821"
-
-# 3. Configure the benchmark command
-#    In .research-loop/config.toml:
-#    benchmark_command = "uv run train.py > run.log 2>&1"
-
-# 4. Start the loop — runs overnight autonomously
-research-loop loop start --repo ./autoresearch
+go install github.com/moralespanitz/research-loop/cmd/research-loop@latest
+research-loop init
 ```
 
-```
-  [HYPOTHESIZE]  Hypothesis loaded
-  [BENCHMARK]    Running baseline benchmark…
-  [BENCHMARK]    Baseline: val_bpb = 0.997900
-
-  [PROPOSE #1]   Proposed: increase_matrix_lr — MATRIX_LR 0.04 → 0.06 based on
-                 underfit signal in baseline loss curve
-  [MUTATE  #1]   Applying mutation: increase_matrix_lr
-  [BENCHMARK #1] Benchmarking increase_matrix_lr… (5 min)
-  [ANNOTATE #1]  Writing causal annotation…
-         ✓  metric=0.991200  Δ-0.006700  node=increase_matrix_lr
-            Higher LR accelerated convergence in warmdown phase; gradient
-            norms suggest model was underfit at baseline LR.
-
-  [PROPOSE #2]   Proposed: depth_10 — increase DEPTH 8 → 10 for more capacity
-  …
-```
-
-<br/>
-
-## Terminal UI
-
-Four screens. One terminal. No browser required.
-
-| Screen        | What it shows                                                           |
-| ------------- | ----------------------------------------------------------------------- |
-| **Home**      | ASCII logo, navigation menu, active provider status.                    |
-| **Ingest**    | URL input → spinner → hypothesis reveal.                                |
-| **Sessions**  | Table of all research sessions with run counts and timestamps.          |
-| **Dashboard** | Live experiment metrics, cost tracker, run history, knowledge graph preview. |
-
-```
-╔══════════════════════════════════════════════════════════════╗
-║  🔬 research-loop                                    v0.1.0 ║
-║  Session: attention-mechanism-2024                           ║
-╠══════════════════════════════════════════════════════════════╣
-║  Runs: 47/∞        Baseline: 3.42 bpb     Best: 3.21 bpb   ║
-║  Current: 3.28 bpb   Δ best: -0.21 ✓      Δ last: +0.07    ║
-╠══════════════════════════════════════════════════════════════╣
-║  Cost: $2.84 API  ·  0.6 GPU-hrs  ·  ~$0.06/run            ║
-║  Graph: 47 nodes  ·  12 improvements  ·  3 dead ends        ║
-╠══════════════════════════════════════════════════════════════╣
-║  Last 5 runs:                                                ║
-║  #47  3.28 bpb  +0.07  ▼  lr_cosine_warmup_v2              ║
-║  #46  3.21 bpb  -0.03  ▲  dropout_schedule_linear           ║
-║  #45  3.24 bpb  -0.01  ▲  head_dim_128_rope                ║
-║  #44  3.25 bpb  +0.02  ▼  gqa_4_groups (checks_failed)     ║
-║  #43  3.23 bpb  -0.04  ▲  swiglu_activation                ║
-╚══════════════════════════════════════════════════════════════╝
-```
-
-<br/>
-
-## Collaboration
+Or with the install script:
 
 ```bash
-# Export your session as a portable bundle
-research-loop export --session attention-2024 --output ./attention.research
-
-# A collaborator loads it and continues from where you left off
-research-loop resume ./attention.research
-
-# They export again — the bundle contains both sessions
-research-loop export --output ./attention-v2.research
+curl -fsSL https://raw.githubusercontent.com/moralespanitz/research-loop/main/install.sh | sh
 ```
 
-A `.research` bundle contains: `hypothesis.md`, `knowledge_graph.md`, `lab_notebook.md`, `autoresearch.jsonl`, code diffs for every mutation, and an auto-generated README with the best result summary.
+### Verify installation
 
-<br/>
+Open a new Claude Code session in the workspace and say anything research-related — "I want to explore transformer memory systems" or "explain policy compression." The agent should automatically load the relevant skill without you typing any command.
 
-## MCP Bridge
+## The Basic Workflow
 
-Don't want to switch tools? Install the MCP server and get Research Loop capabilities inside Claude Code, OpenCode, Cursor, or any MCP-compatible host.
+1. **research-loop** — Activates when you mention research, a topic, papers, or experiments. Asks one question to confirm framing. Entry point for everything.
+
+2. **learn** — Activates when you say "explain", "what is", "I don't understand", or ask about any term. Runs the MIT grad student methodology: mental models → debates → diagnostic questions → Socratic reverse test. Compresses field mastery from semesters into days.
+
+3. **explore** — Activates when you want to map a field or find papers. Spawns 4 parallel search agents simultaneously (papers, repos, debates, open problems). Saves everything to the lab notebook. Presents a 3-sentence synthesis, not a data dump.
+
+4. **idea-selection** — Activates when you want to find gaps or evaluate whether an idea is worth pursuing. Runs the conversational Carlini gate: 4 questions (taste, uniqueness, impact, feasibility), one at a time, scored and saved.
+
+5. **discover** — Activates when you want to test multiple angles. Runs 4 parallel hypothesis lanes (incremental, cross-field transfer, assumption challenge, systems/efficiency). Applies Carlini gates between stages. Kills weak lanes early.
+
+6. **loop** — Activates when you have a hypothesis and want to run experiments. Drives the PROPOSE → MUTATE → BENCHMARK → ANNOTATE cycle. Builds a living knowledge graph of what was tried and why it worked or failed.
+
+7. **execution** — Activates when experiments complete. Annotates results causally, updates the lab notebook, and helps you decide: continue, pivot, or kill.
+
+**The agent checks for relevant skills before any response.** Mandatory workflows, not suggestions.
+
+## What's Inside
+
+### Skills Library
+
+**Learning**
+- **learn** — MIT grad student methodology + Socratic reverse learning. Mental models, field debates, diagnostic questions, gap tracking.
+
+**Exploration**
+- **research-loop** — Entry point. Conversational advisor. Routes to the right skill based on what you say.
+- **explore** — Parallel field mapping. 4 agents simultaneously. Saves full results to lab notebook.
+
+**Idea Development**
+- **idea-selection** — Conversational Carlini gate. Taste, uniqueness, impact, feasibility. One question at a time.
+- **discover** — Parallel hypothesis lanes. 4 angles. Gates between stages. Kills weak lanes early.
+
+**Experiments**
+- **loop** — PROPOSE → MUTATE → BENCHMARK → ANNOTATE cycle. Living knowledge graph.
+- **execution** — Result annotation, causal reasoning, continue/pivot/kill decisions.
+
+**Writing (coming in v0.2)**
+- **scribe** — Draft paper sections from experiment data. Methods, results, related work.
+- **reviewer** — Methodology checking. P-hacking detection. Claim validation.
+
+### Hands (autonomous capability packages, v0.2)
+
+Hands are scheduled agents that work for you on a cadence:
+
+- **Ingestor** — Download and extract papers from ArXiv while you sleep
+- **Experimenter** — Run overnight experiment loops with approval gates
+- **Librarian** — Monitor ArXiv RSS feeds and auto-ingest matching papers
+- **Scribe** — Draft paper sections from accumulated results
+- **Reviewer** — Audit methodology, check for confounds, validate claims
+- **Replicator** — Attempt to reproduce published results automatically
+- **Deep Learner** — 5-phase corpus pipeline: mental models, landscape mapping, deep questions, Socratic tutoring
+
+### Session persistence
+
+Every session accumulates to a lab notebook:
+
+```
+.research-loop/sessions/<slug>/
+  lab_notebook.md     # everything: framing, papers, gaps, scores, results
+  knowledge_graph.md  # living DAG of hypotheses tried and why they failed
+  autoresearch.jsonl  # machine-readable experiment history
+```
+
+Sessions are resumable. Bundles are portable. Any agent can resume from `lab_notebook.md` alone.
+
+## Philosophy
+
+- **Researcher in control** — the agent proposes, you approve, the agent executes
+- **One thing at a time** — never dump; always present as choices
+- **Parallel by default** — 4 agents simultaneously, not sequentially
+- **Persist everything** — lab notebook accumulates every decision and finding
+- **Learn, don't just search** — understanding deeply is part of the research process
+
+## Go CLI reference
 
 ```bash
-research-loop mcp serve
+research-loop init                          # configure LLM backend
+research-loop start <arxiv-url>             # ingest paper, extract hypothesis
+research-loop loop start                    # start experiment loop
+research-loop hand activate experimenter    # activate a Hand
+research-loop resume ./bundle.research      # resume from a bundle
+research-loop export                        # export .research bundle
 ```
-
-Exposes: `research_paper_ingest`, `research_loop_start`, `research_kg_query`, `research_library_search`, `research_export`, and more.
-
-The MCP bridge is ~20% of the full experience. The full TUI workspace — Dashboard, Library pane, Writer, skill lifecycle management — requires the standalone binary.
-
-<br/>
-
-## Workspace layout
-
-```
-~/research/
-  .research-loop/
-    config.toml                      # LLM backend, metric config
-    sessions/
-      attention-mechanism-2024/
-        hypothesis.md                # extracted claim + experiment design
-        knowledge_graph.md           # living DAG of every idea tried
-        lab_notebook.md              # human-readable experiment log
-        autoresearch.jsonl           # machine-readable run history (checkpoint)
-        checkpoints/                 # git patches per mutation
-    library/
-      papers/                        # ingested PDFs + extracted metadata
-      index.json                     # full-text search index
-      feeds.toml                     # ArXiv RSS subscriptions
-    drafts/
-      paper-v1.md
-    bundles/
-```
-
-All state in plain Markdown and JSONL. No database. Fully git-diffable.
-
-<br/>
-
-## Development
-
-```bash
-go build ./cmd/research-loop    # Build binary
-go test ./...                   # Run tests
-go vet ./...                    # Lint
-```
-
-See [doc/DEVELOPING.md](doc/DEVELOPING.md) for the full development guide.
-
-<br/>
-
-## Roadmap
-
-- ⚪ Go binary + Bubble Tea TUI (Home, Ingest, Sessions, Dashboard)
-- ⚪ Epistemic + Empirical agents
-- ⚪ Paper ingestion pipeline (ArXiv → `hypothesis.md`)
-- ⚪ Experiment loop state machine + JSONL checkpointing
-- ⚪ Knowledge graph (Markdown DAG)
-- ⚪ `.research` bundle export + resume
-- ⚪ Library pane with full-text search
-- ⚪ Writer pane with Vim keybindings + LaTeX export
-- ⚪ Scribe + Reviewer agents
-- ⚪ ArXiv RSS feed monitoring
-- ⚪ MCP bridge server
-- ⚪ Bundle registry
-- ⚪ Multi-paper sessions
-- ⚪ Deep Learner skill
-- ⚪ Community skill registry
-- ⚪ Homebrew / pip distribution
-- ⚪ Documentation site
-
-<br/>
 
 ## Contributing
 
-We welcome contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+Skills live directly in this repository. To contribute:
 
-<br/>
+1. Fork the repository
+2. Create a branch for your skill or Hand
+3. Follow the guide in `CONTRIBUTING.md`
+4. Submit a PR
 
-## Community
+See `CONTRIBUTING.md` for the complete guide, including skill writing rules, Hand manifest format, and commit conventions.
 
-- [Discord](https://discord.gg/research-loop) — Join the community
-- [GitHub Issues](https://github.com/moralespanitz/research-loop/issues) — Bugs and feature requests
-- [GitHub Discussions](https://github.com/moralespanitz/research-loop/discussions) — Ideas and RFCs
+## Roadmap
 
-<br/>
+See `ROADMAP.md` for the full phased plan through v1.0, including the Deep Learner Hand, 4-pane TUI, MCP bridge, and bundle registry.
+
+## Updating
+
+Pull the latest skills:
+
+```bash
+git pull origin main
+```
 
 ## License
 
-MIT &copy; 2026 Research Loop
+MIT — see `LICENSE` for details.
 
-## Star History
+## Support
 
-[![Star History Chart](https://api.star-history.com/image?repos=moralespanitz/research-loop&type=date&legend=top-left)](https://www.star-history.com/?repos=moralespanitz%2Fresearch-loop&type=date&legend=top-left)
-
-<br/>
-
----
-
-<p align="center">
-  <img src="doc/assets/footer.png" alt="" width="720" />
-</p>
-
-<p align="center">
-  <sub>Open source under MIT. Built for researchers who want to run experiments, not babysit terminals.</sub>
-</p>
+- **Issues**: https://github.com/moralespanitz/research-loop/issues
+- **Discussions**: https://github.com/moralespanitz/research-loop/discussions
+- **Security**: see `SECURITY.md`
