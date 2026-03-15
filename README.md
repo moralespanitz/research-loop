@@ -12,7 +12,7 @@ After you've picked a direction, your agent finds the gaps, runs them through a 
 
 Next up, once you say "go", it launches a *subagent-driven experiment loop* — proposing code mutations, running benchmarks, annotating results causally, and building a living knowledge graph that remembers what was tried and why it failed.
 
-When you want to understand something deeply, just say "explain X." The `learn` skill activates the full MIT grad student methodology: 5 core mental models (one at a time), 3 field debates (both sides steel-manned), 5 diagnostic questions that expose memorization vs. real understanding, and a Socratic reverse test where you teach it back. Every gap you reveal gets logged to the lab notebook.
+When you want to understand something deeply, just say "explain X." The `learn` skill walks you through how experts actually think about a topic — not a summary, but the underlying reasoning structures: core mental models one at a time, the places where the field genuinely disagrees, questions that expose whether you understand or just recognize, and finally a reverse test where you explain it back. Every gap gets logged to the lab notebook.
 
 There's a bunch more to it, but that's the core of the system. And because the skills trigger automatically, you don't need to do anything special. Your agent just has Research Loop.
 
@@ -58,7 +58,7 @@ Open a new Claude Code session in the workspace and say anything research-relate
 
 1. **research-loop** — Activates when you mention research, a topic, papers, or experiments. Asks one question to confirm framing. Entry point for everything.
 
-2. **learn** — Activates when you say "explain", "what is", "I don't understand", or ask about any term. Runs the MIT grad student methodology: mental models → debates → diagnostic questions → Socratic reverse test. Compresses field mastery from semesters into days.
+2. **learn** — Activates when you say "explain", "what is", "I don't understand", or ask about any term. Builds the reasoning structures experts carry: mental models → field debates → diagnostic questions → reverse test. The difference between reading about something and actually understanding it.
 
 3. **explore** — Activates when you want to map a field or find papers. Spawns 4 parallel search agents simultaneously (papers, repos, debates, open problems). Saves everything to the lab notebook. Presents a 3-sentence synthesis, not a data dump.
 
@@ -77,7 +77,7 @@ Open a new Claude Code session in the workspace and say anything research-relate
 ### Skills (shipping today)
 
 **Learning**
-- **learn** — MIT grad student methodology + Socratic reverse learning. Mental models, field debates, diagnostic questions, gap tracking.
+- **learn** — Builds expert reasoning structures: mental models, field debates, diagnostic questions, reverse test, gap tracking.
 
 **Exploration**
 - **research-loop** — Entry point. Conversational advisor. Routes to the right skill based on what you say.
@@ -200,11 +200,16 @@ Key ideas we borrowed:
 - **Feasibility** — fail fast. Start with the sub-problem most likely to fail. Don't build the polished version when a prototype tells you whether the core idea works.
 - **Kill papers ruthlessly** — sunk cost is not a reason to continue. Pivot immediately to something more important when it appears.
 
-**Jesse Vincent — [Superpowers](https://github.com/obra/superpowers)**
-The skill system architecture, `<SUBAGENT-STOP>` pattern, `<HARD-GATE>` tags, description-as-triggering-conditions convention, and rationalization tables in Research Loop are directly inspired by Superpowers — a complete software development workflow for coding agents built on composable skills.
+**Ihtesham Ali — on how to actually learn a field**
+The `learn` skill's structure is inspired by [this thread](https://x.com/ihtesham2005/status/2030214970353602806) about the difference between reading a subject and understanding it. The core insight: instead of asking an AI to summarize, ask it what mental models experts share, where they fundamentally disagree, and what questions would expose whether someone truly understands versus memorized. Then answer those questions yourself. Every wrong answer tells you something.
 
-**MIT grad student methodology**
-The `learn` skill's structure — mental models, field debates, diagnostic questions, Socratic reverse test — is inspired by the learning approach described in [this viral Twitter thread by Ihtesham Ali](https://twitter.com/ihtesham2005) about compressing a semester of learning into 48 hours using targeted questions rather than passive summarization.
+## Special Thanks
+
+**[Jesse Vincent](https://github.com/obra) — [Superpowers](https://github.com/obra/superpowers)**
+
+Research Loop's skill architecture is built on patterns Jesse developed for Superpowers — a complete software development workflow for coding agents. Specifically: the `<SUBAGENT-STOP>` convention that lets subagents skip advisor flows and just do work, the `<HARD-GATE>` pattern for non-negotiable rules, the principle that skill descriptions should describe *when to load* rather than *what the skill does*, and the rationalization tables that make rules stick under pressure.
+
+If you find Research Loop useful for your work, go star [Superpowers](https://github.com/obra/superpowers) — the skill system wouldn't exist in its current form without it.
 
 ## Contributing
 
