@@ -44,6 +44,7 @@ Run 'research-loop <command> --help' for more information.`,
 		newExportCmd(),
 		newMCPCmd(),
 		newDashboardCmd(),
+		newTUICmd(),
 	)
 
 	return cmd

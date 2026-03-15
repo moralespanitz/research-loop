@@ -1,12 +1,3 @@
 {
-  "mcpServers": {
-    "research-loop": {
-      "type": "stdio",
-      "command": "${RESEARCH_LOOP_BIN:-research-loop}",
-      "args": ["mcp", "serve"],
-      "env": {
-        "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}"
-      }
-    }
-  }
+  "mcpServers": {}
 }
