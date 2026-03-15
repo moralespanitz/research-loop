@@ -1,11 +1,9 @@
 package tui
 
 import (
+	"context"
 	"fmt"
-	"os/exec"
-	"runtime"
 	"strings"
-	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -20,18 +18,25 @@ type setupState int
 
 const (
 	setupSelectProvider setupState = iota // pick from list
-	setupBrowserOpen                      // browser opened, waiting for token paste
+	setupOAuthWaiting                     // browser opened, OAuth callback pending
 	setupKeyInput                         // paste/type API key
 	setupLocalConfig                      // configure base URL for local providers
-	setupVerifying                        // checking the credential
+	setupVerifying                        // checking / saving credential
 	setupDone                             // success
 	setupFailed                           // error
 )
 
 // ─── Messages ────────────────────────────────────────────────────────────────
 
-type setupVerifyMsg struct{ ok bool; err error }
-type browserOpenedMsg struct{}
+type setupVerifyMsg struct {
+	ok  bool
+	err error
+}
+type oauthCompleteMsg struct {
+	accessToken  string
+	refreshToken string
+}
+type oauthErrMsg struct{ err error }
 
 // ─── Model ───────────────────────────────────────────────────────────────────
 
@@ -43,6 +48,7 @@ type setupModel struct {
 	input     textinput.Model
 	spinner   spinner.Model
 	err       error
+	authURL   string // displayed while waiting for OAuth
 }
 
 func newSetupModel(workspace string) setupModel {
@@ -66,26 +72,48 @@ func newSetupModel(workspace string) setupModel {
 
 // ─── Commands ────────────────────────────────────────────────────────────────
 
-func openBrowserURL(url string) tea.Cmd {
+// startOAuthFlow starts the local callback server, opens the browser,
+// and waits for the token in a goroutine — sending a message when done.
+func startOAuthFlow() tea.Cmd {
 	return func() tea.Msg {
-		var cmd *exec.Cmd
-		switch runtime.GOOS {
-		case "darwin":
-			cmd = exec.Command("open", url)
-		case "linux":
-			cmd = exec.Command("xdg-open", url)
-		default:
-			// Can't open browser — user will copy URL manually
-			return browserOpenedMsg{}
+		flow, err := auth.NewOAuthFlow()
+		if err != nil {
+			return oauthErrMsg{err}
 		}
-		_ = cmd.Start()
-		// Small delay so the browser has time to open before we show instructions
-		time.Sleep(500 * time.Millisecond)
-		return browserOpenedMsg{}
+		if err := flow.Start(); err != nil {
+			return oauthErrMsg{fmt.Errorf("could not open browser: %w", err)}
+		}
+
+		// Wait for callback in background — this blocks until auth completes or times out.
+		result, err := flow.Wait(context.Background())
+		if err != nil {
+			return oauthErrMsg{err}
+		}
+		return oauthCompleteMsg{
+			accessToken:  result.AccessToken,
+			refreshToken: result.RefreshToken,
+		}
 	}
 }
 
-func verifyCredential(workspace string, p auth.Provider, value string) tea.Cmd {
+func saveOAuthResult(workspace string, p auth.Provider, accessToken, refreshToken string) tea.Cmd {
+	return func() tea.Msg {
+		result := auth.OAuthResult{
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+		}
+		if err := auth.SaveOAuth(workspace, p.ID, result); err != nil {
+			return setupVerifyMsg{ok: false, err: err}
+		}
+		cred := auth.Credential{ProviderID: p.ID, Value: accessToken}
+		if err := auth.SetActiveProvider(workspace, p.ID, cred); err != nil {
+			return setupVerifyMsg{ok: false, err: err}
+		}
+		return setupVerifyMsg{ok: true}
+	}
+}
+
+func saveAPIKey(workspace string, p auth.Provider, value string) tea.Cmd {
 	return func() tea.Msg {
 		cred := auth.Credential{ProviderID: p.ID, Value: value, BaseURL: p.BaseURL}
 		if err := auth.Save(workspace, cred); err != nil {
@@ -100,9 +128,7 @@ func verifyCredential(workspace string, p auth.Provider, value string) tea.Cmd {
 
 // ─── Update ──────────────────────────────────────────────────────────────────
 
-func (m setupModel) Init() tea.Cmd {
-	return nil
-}
+func (m setupModel) Init() tea.Cmd { return nil }
 
 func (m setupModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -127,16 +153,9 @@ func (m setupModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, navigateTo(screenHome)
 			}
 
-		case setupBrowserOpen:
+		case setupOAuthWaiting:
+			// User can only cancel while waiting
 			switch msg.String() {
-			case "enter":
-				// User pressed enter after opening browser — move to token input
-				m.state = setupKeyInput
-				m.input.EchoMode = textinput.EchoPassword
-				m.input.EchoCharacter = '•'
-				m.input.Placeholder = "Paste your API key here…"
-				m.input.Focus()
-				return m, textinput.Blink
 			case "esc", "q":
 				m.state = setupSelectProvider
 				return m, nil
@@ -156,7 +175,7 @@ func (m setupModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.state = setupVerifying
 				return m, tea.Batch(
 					m.spinner.Tick,
-					verifyCredential(m.workspace, m.provider, val),
+					saveAPIKey(m.workspace, m.provider, val),
 				)
 			case "esc":
 				m.state = setupSelectProvider
@@ -182,9 +201,22 @@ func (m setupModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-	case browserOpenedMsg:
-		m.state = setupBrowserOpen
+	// ── OAuth messages ────────────────────────────────────────────────────────
+
+	case oauthCompleteMsg:
+		// Browser flow completed — save and finish
+		m.state = setupVerifying
+		return m, tea.Batch(
+			m.spinner.Tick,
+			saveOAuthResult(m.workspace, m.provider, msg.accessToken, msg.refreshToken),
+		)
+
+	case oauthErrMsg:
+		m.err = msg.err
+		m.state = setupFailed
 		return m, nil
+
+	// ── Save result ───────────────────────────────────────────────────────────
 
 	case setupVerifyMsg:
 		if msg.ok {
@@ -201,7 +233,7 @@ func (m setupModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 	}
 
-	// Delegate input
+	// Delegate text input
 	if m.state == setupKeyInput || m.state == setupLocalConfig {
 		var cmd tea.Cmd
 		m.input, cmd = m.input.Update(msg)
@@ -214,15 +246,24 @@ func (m setupModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m setupModel) transitionToAuth() (tea.Model, tea.Cmd) {
 	switch m.provider.AuthType {
 	case auth.AuthTypeBrowser:
-		// Open browser immediately, show waiting screen
-		return m, tea.Batch(
-			openBrowserURL(m.provider.AuthURL),
-		)
+		// Build the OAuth URL to display while waiting
+		flow, err := auth.NewOAuthFlow()
+		if err != nil {
+			m.err = err
+			m.state = setupFailed
+			return m, nil
+		}
+		m.authURL = flow.AuthURL
+		m.state = setupOAuthWaiting
+		// Start the full OAuth flow (opens browser + waits for callback)
+		return m, tea.Batch(m.spinner.Tick, startOAuthFlow())
+
 	case auth.AuthTypeAPIKey:
 		m.state = setupKeyInput
 		m.input.Placeholder = fmt.Sprintf("Paste your %s…", m.provider.KeyLabel)
 		m.input.Focus()
 		return m, textinput.Blink
+
 	case auth.AuthTypeLocal:
 		m.state = setupLocalConfig
 		m.input.EchoMode = textinput.EchoNormal
@@ -241,25 +282,18 @@ func (m setupModel) View() string {
 
 	var body string
 	switch m.state {
-
 	case setupSelectProvider:
 		body = m.viewSelectProvider()
-
-	case setupBrowserOpen:
-		body = m.viewBrowserOpen()
-
+	case setupOAuthWaiting:
+		body = m.viewOAuthWaiting()
 	case setupKeyInput:
 		body = m.viewKeyInput()
-
 	case setupLocalConfig:
 		body = m.viewLocalConfig()
-
 	case setupVerifying:
 		body = m.spinner.View() + "  " + primaryText.Render("Saving configuration…")
-
 	case setupDone:
 		body = m.viewDone()
-
 	case setupFailed:
 		body = m.viewFailed()
 	}
@@ -276,7 +310,7 @@ func (m setupModel) viewSelectProvider() string {
 		var authBadge string
 		switch p.AuthType {
 		case auth.AuthTypeBrowser:
-			authBadge = badgeBlue.Render(" browser ")
+			authBadge = badgeBlue.Render(" OAuth ")
 		case auth.AuthTypeAPIKey:
 			authBadge = badgeGray.Render(" api key ")
 		case auth.AuthTypeLocal:
@@ -301,89 +335,73 @@ func (m setupModel) viewSelectProvider() string {
 		}
 	}
 
-	providerCard := cardStyle.Render(
-		sectionTitle.Render("PROVIDERS") + "\n\n" + items,
-	)
-
+	card := cardStyle.Render(sectionTitle.Render("PROVIDERS") + "\n\n" + items)
 	hint := helpBar("↑↓", "navigate", "enter", "select", "esc", "back")
-	return lipgloss.JoinVertical(lipgloss.Left, title, sub, "", providerCard, "", hint)
+	return lipgloss.JoinVertical(lipgloss.Left, title, sub, "", card, "", hint)
 }
 
-func (m setupModel) viewBrowserOpen() string {
+func (m setupModel) viewOAuthWaiting() string {
 	p := m.provider
+	spin := m.spinner.View()
 
-	title := primaryText.Render("Connect " + p.Name)
+	title := primaryText.Render("Connecting to " + p.Name)
 
 	steps := cardStyle.Render(
-		sectionTitle.Render("STEPS") + "\n\n" +
-			successText.Render("1") + "  " + lipgloss.NewStyle().Foreground(colorText).Render("A browser window has opened") + "\n" +
-			muted.Render("   "+p.AuthURL) + "\n\n" +
-			primaryText.Render("2") + "  " + lipgloss.NewStyle().Foreground(colorText).Render("Log in to your "+p.Name+" account") + "\n\n" +
-			primaryText.Render("3") + "  " + lipgloss.NewStyle().Foreground(colorText).Render("Copy your API key from the dashboard") + "\n\n" +
-			primaryText.Render("4") + "  " + lipgloss.NewStyle().Foreground(colorText).Render("Press ")+
-			keyLabel.Render("enter")+" "+lipgloss.NewStyle().Foreground(colorText).Render("to paste it here"),
+		sectionTitle.Render("OAUTH FLOW") + "\n\n" +
+			successText.Render("✓") + "  " + lipgloss.NewStyle().Foreground(colorText).Render("Local callback server started on port 38787") + "\n\n" +
+			successText.Render("✓") + "  " + lipgloss.NewStyle().Foreground(colorText).Render("Browser opened → log in to "+p.Name) + "\n\n" +
+			spin + "  " + primaryText.Render("Waiting for authorization…") + "\n" +
+			muted.Render("   (authorize in the browser window, then return here)") + "\n\n" +
+			dimText.Render("  If the browser didn't open, visit:") + "\n" +
+			lipgloss.NewStyle().Foreground(colorPrimary).Width(62).Render("  "+m.authURL),
 	)
 
-	urlBox := lipgloss.NewStyle().
-		Border(lipgloss.NormalBorder()).
-		BorderForeground(colorBorder).
-		Padding(0, 1).
-		Foreground(colorPrimary).
-		Render(p.AuthURL)
-
-	hint := helpBar("enter", "I have my key →", "esc", "back")
-	return lipgloss.JoinVertical(lipgloss.Left, title, "", steps, "", muted.Render("URL:  ")+urlBox, "", hint)
+	hint := helpBar("esc", "cancel")
+	return lipgloss.JoinVertical(lipgloss.Left, title, "", steps, "", hint)
 }
 
 func (m setupModel) viewKeyInput() string {
 	p := m.provider
-
 	title := primaryText.Render("Enter your " + p.Name + " " + p.KeyLabel)
 
 	var envHint string
 	if p.KeyEnv != "" {
-		envHint = "\n" + muted.Render("  Or set environment variable: ") +
-			keyLabel.Render(p.KeyEnv)
+		envHint = "\n" + muted.Render("  Or set environment variable: ") + keyLabel.Render(p.KeyEnv)
 	}
 
 	inputBox := inputStyle.Render(m.input.View())
-
 	hint := helpBar("enter", "confirm", "esc", "back")
-	return lipgloss.JoinVertical(lipgloss.Left,
-		title, envHint, "", inputBox, "", hint,
-	)
+	return lipgloss.JoinVertical(lipgloss.Left, title, envHint, "", inputBox, "", hint)
 }
 
 func (m setupModel) viewLocalConfig() string {
 	title := primaryText.Render("Configure " + m.provider.Name)
 	sub := muted.Render("Enter the base URL where " + m.provider.Name + " is running")
-
 	inputBox := inputStyle.Render(m.input.View())
-
 	hint := helpBar("enter", "confirm", "esc", "back")
 	return lipgloss.JoinVertical(lipgloss.Left, title, sub, "", inputBox, "", hint)
 }
 
 func (m setupModel) viewDone() string {
 	p := m.provider
-
 	check := successText.Render("✓  " + p.Name + " connected")
+
+	authMethod := "OAuth token"
+	if p.AuthType == auth.AuthTypeAPIKey {
+		authMethod = "API key"
+	} else if p.AuthType == auth.AuthTypeLocal {
+		authMethod = "Local (no auth)"
+	}
 
 	details := cardStyle.Copy().BorderForeground(colorSuccess).Render(
 		sectionTitle.Render("CONFIGURED") + "\n\n" +
-			muted.Render(fmt.Sprintf("  %-14s", "Provider")) +
-			lipgloss.NewStyle().Foreground(colorText).Render(p.Name) + "\n" +
-			muted.Render(fmt.Sprintf("  %-14s", "Model")) +
-			lipgloss.NewStyle().Foreground(colorPrimary).Render(p.DefaultModel) + "\n" +
-			muted.Render(fmt.Sprintf("  %-14s", "Auth")) +
-			lipgloss.NewStyle().Foreground(colorText).Render(authTypeName(p.AuthType)) + "\n" +
-			muted.Render(fmt.Sprintf("  %-14s", "Credential")) +
-			successText.Render("saved to .research-loop/credentials.toml"),
+			muted.Render(fmt.Sprintf("  %-14s", "Provider")) + lipgloss.NewStyle().Foreground(colorText).Render(p.Name) + "\n" +
+			muted.Render(fmt.Sprintf("  %-14s", "Model")) + lipgloss.NewStyle().Foreground(colorPrimary).Render(p.DefaultModel) + "\n" +
+			muted.Render(fmt.Sprintf("  %-14s", "Auth")) + lipgloss.NewStyle().Foreground(colorText).Render(authMethod) + "\n" +
+			muted.Render(fmt.Sprintf("  %-14s", "Credential")) + successText.Render("saved to .research-loop/credentials.toml"),
 	)
 
-	next := muted.Render("You can now start a new investigation with ") +
-		keyLabel.Render("research-loop tui")
-
+	next := muted.Render("You can now start a new investigation.")
 	hint := helpBar("enter", "back to home")
 	return lipgloss.JoinVertical(lipgloss.Left, check, "", details, "", next, "", hint)
 }
@@ -395,18 +413,4 @@ func (m setupModel) viewFailed() string {
 	)
 	hint := helpBar("enter", "try again", "esc", "home")
 	return lipgloss.JoinVertical(lipgloss.Left, errBox, "", hint)
-}
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-func authTypeName(t auth.AuthType) string {
-	switch t {
-	case auth.AuthTypeBrowser:
-		return "Browser login"
-	case auth.AuthTypeAPIKey:
-		return "API key"
-	case auth.AuthTypeLocal:
-		return "Local (no auth)"
-	}
-	return "Unknown"
 }
