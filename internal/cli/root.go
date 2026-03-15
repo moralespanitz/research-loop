@@ -42,6 +42,7 @@ Run 'research-loop <command> --help' for more information.`,
 		newListCmd(),
 		newResumeCmd(),
 		newExportCmd(),
+		newMCPCmd(),
 	)
 
 	return cmd
