@@ -184,6 +184,28 @@ The `learn` skill activates mid-flow and teaches the concept, then hands control
 
 Fellows (autonomous scheduled agents), the full 4-pane TUI, PDF ingestion pipeline, MCP bridge improvements, and the bundle registry are in active development. See [ROADMAP.md](ROADMAP.md) for the full plan.
 
+## References & Acknowledgements
+
+**Nicholas Carlini — "How to win a best paper award"**
+The Carlini gate in Research Loop is directly inspired by Nicholas Carlini's framework for evaluating whether a research idea is worth pursuing. The four axes — taste, uniqueness, impact, feasibility — are a distillation of his writing on what separates important research from marginal work.
+
+> *"The single most important skill to develop for high-impact research is good taste in what problems are worth solving. If you have good taste, and you keep writing papers, eventually you'll write one with exceptionally high impact. But if you have bad taste, you could write a hundred papers and never do anything of consequence."*
+>
+> — Nicholas Carlini, [How to win a best paper award](https://nicholas.carlini.com/writing/2026/how-to-win-a-best-paper-award.html)
+
+Key ideas we borrowed:
+- **Taste** — does this problem matter? Would solving it change the field?
+- **Uniqueness** — what can you specifically bring that others can't? Find your comparative advantage.
+- **Impact** — write the best-case conclusion before running a single experiment. If you have nothing compelling to say, drop the project.
+- **Feasibility** — fail fast. Start with the sub-problem most likely to fail. Don't build the polished version when a prototype tells you whether the core idea works.
+- **Kill papers ruthlessly** — sunk cost is not a reason to continue. Pivot immediately to something more important when it appears.
+
+**Jesse Vincent — [Superpowers](https://github.com/obra/superpowers)**
+The skill system architecture, `<SUBAGENT-STOP>` pattern, `<HARD-GATE>` tags, description-as-triggering-conditions convention, and rationalization tables in Research Loop are directly inspired by Superpowers — a complete software development workflow for coding agents built on composable skills.
+
+**MIT grad student methodology**
+The `learn` skill's structure — mental models, field debates, diagnostic questions, Socratic reverse test — is inspired by the learning approach described in [this viral Twitter thread by Ihtesham Ali](https://twitter.com/ihtesham2005) about compressing a semester of learning into 48 hours using targeted questions rather than passive summarization.
+
 ## Contributing
 
 Skills live directly in this repository. To contribute:
