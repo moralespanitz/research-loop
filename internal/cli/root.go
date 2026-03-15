@@ -43,6 +43,7 @@ Run 'research-loop <command> --help' for more information.`,
 		newResumeCmd(),
 		newExportCmd(),
 		newMCPCmd(),
+		newDashboardCmd(),
 	)
 
 	return cmd
