@@ -7,7 +7,7 @@ Research Loop is an open-source Agent OS for scientific researchers. We welcome 
 - **Bug reports** — open an issue with steps to reproduce and your environment details
 - **Feature requests** — open an issue describing the user problem, not just the solution
 - **Skills** — add or improve a skill in `.claude/skills/` following the guide below
-- **Hands** — build a new Hand (autonomous capability package) and submit it to the registry
+- **Fellows** — build a new Fellow (autonomous capability package) and submit it to the registry
 - **Go core** — contribute to the binary: TUI panes, LLM drivers, ingestion pipeline, loop state machine
 - **Documentation** — improve the README, add examples, write tutorials
 - **Research validation** — test the tool on real papers and report where it breaks
@@ -35,7 +35,7 @@ go install ./cmd/research-loop
 research-loop/
 ├── cmd/                  # CLI entry points
 ├── internal/             # Go core: loop, discover, explore, ingestion
-├── hands/                # Built-in Hand definitions (HAND.toml + prompts)
+├── fellows/                # Built-in Fellow definitions (FELLOW.toml + prompts)
 ├── skills/               # Duplicate of .claude/skills/ (source of truth)
 ├── .claude/
 │   ├── skills/           # Claude Code skills (loaded via Skill tool)
@@ -84,22 +84,22 @@ Do the task and return structured results immediately.
 
 See `skills/writing-skills/` for a complete guide (inspired by [obra/superpowers](https://github.com/obra/superpowers)).
 
-## Writing a Hand
+## Writing a Fellow
 
-A Hand is an autonomous capability package — a scheduled agent that works on the researcher's behalf.
+A Fellow is an autonomous capability package — a scheduled agent that works on the researcher's behalf.
 
 ```
-hands/
+fellows/
   my-hand/
-    HAND.toml       # Manifest: name, description, schedule, tools
-    system.md       # System prompt for this Hand
+    FELLOW.toml       # Manifest: name, description, schedule, tools
+    system.md       # System prompt for this Fellow
     SKILL.md        # Domain expertise (optional)
 ```
 
-**HAND.toml schema:**
+**FELLOW.toml schema:**
 ```toml
 name = "my-hand"
-description = "One sentence: what does this Hand do autonomously?"
+description = "One sentence: what does this Fellow do autonomously?"
 schedule = "daily"          # cron expression or: hourly, daily, on-paper-add
 tools = ["web_search", "read_file", "write_file"]
 max_runtime_minutes = 30
@@ -110,7 +110,7 @@ requires_approval = false   # true = pauses for researcher sign-off
 
 1. **Fork** the repository and create a branch: `git checkout -b feat/my-feature`
 2. **Test your change** — for skills, manually test with Claude Code; for Go code, run `go test ./...`
-3. **Update docs** — if you add a new skill or Hand, update the README table
+3. **Update docs** — if you add a new skill or Fellow, update the README table
 4. **Open a PR** against `main` with:
    - A clear description of what changed and why
    - A reference to the issue it addresses (if any)
@@ -128,7 +128,7 @@ requires_approval = false   # true = pauses for researcher sign-off
 Follow the conventional commits format:
 
 ```
-feat: add Deep Learner Hand with 5-phase corpus pipeline
+feat: add Deep Learner Fellow with 5-phase corpus pipeline
 fix: subagent interception when research-loop skill loads in worker context
 docs: add CONTRIBUTING.md and ROADMAP.md
 refactor: unify LLM driver interface across providers

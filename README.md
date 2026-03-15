@@ -10,7 +10,7 @@ Once it's teased the research framing out of the conversation, it explores in pa
 
 After you've picked a direction, your agent finds the gaps, runs them through a Carlini gate (one question at a time, waiting for your answers), and surfaces the ideas worth pursuing. Then it spins up parallel hypothesis lanes, applies gates between them, and kills the weak ones early.
 
-Next up, once you say "go", it launches a *subagent-driven experiment loop* — proposing code mutations, running benchmarks, annotating results causally, and building a living knowledge graph that remembers what was tried and why it failed. It's not uncommon for the loop to run overnight and return 60+ annotated experiments by morning.
+Next up, once you say "go", it launches a *subagent-driven experiment loop* — proposing code mutations, running benchmarks, annotating results causally, and building a living knowledge graph that remembers what was tried and why it failed.
 
 When you want to understand something deeply, just say "explain X." The `learn` skill activates the full MIT grad student methodology: 5 core mental models (one at a time), 3 field debates (both sides steel-manned), 5 diagnostic questions that expose memorization vs. real understanding, and a Socratic reverse test where you teach it back. Every gap you reveal gets logged to the lab notebook.
 
@@ -37,7 +37,7 @@ cd research-loop
 
 The `.claude/` directory is picked up automatically by Claude Code. Open a new session and it's active.
 
-### Go binary (standalone CLI)
+### Go binary
 
 ```bash
 go install github.com/moralespanitz/research-loop/cmd/research-loop@latest
@@ -74,7 +74,7 @@ Open a new Claude Code session in the workspace and say anything research-relate
 
 ## What's Inside
 
-### Skills Library
+### Skills (shipping today)
 
 **Learning**
 - **learn** — MIT grad student methodology + Socratic reverse learning. Mental models, field debates, diagnostic questions, gap tracking.
@@ -91,22 +91,6 @@ Open a new Claude Code session in the workspace and say anything research-relate
 - **loop** — PROPOSE → MUTATE → BENCHMARK → ANNOTATE cycle. Living knowledge graph.
 - **execution** — Result annotation, causal reasoning, continue/pivot/kill decisions.
 
-**Writing (coming in v0.2)**
-- **scribe** — Draft paper sections from experiment data. Methods, results, related work.
-- **reviewer** — Methodology checking. P-hacking detection. Claim validation.
-
-### Hands (autonomous capability packages, v0.2)
-
-Hands are scheduled agents that work for you on a cadence:
-
-- **Ingestor** — Download and extract papers from ArXiv while you sleep
-- **Experimenter** — Run overnight experiment loops with approval gates
-- **Librarian** — Monitor ArXiv RSS feeds and auto-ingest matching papers
-- **Scribe** — Draft paper sections from accumulated results
-- **Reviewer** — Audit methodology, check for confounds, validate claims
-- **Replicator** — Attempt to reproduce published results automatically
-- **Deep Learner** — 5-phase corpus pipeline: mental models, landscape mapping, deep questions, Socratic tutoring
-
 ### Session persistence
 
 Every session accumulates to a lab notebook:
@@ -120,6 +104,18 @@ Every session accumulates to a lab notebook:
 
 Sessions are resumable. Bundles are portable. Any agent can resume from `lab_notebook.md` alone.
 
+### Go CLI (shipping today)
+
+```bash
+research-loop init                     # configure LLM backend
+research-loop start <arxiv-url>        # ingest paper, extract hypothesis
+research-loop loop start               # start experiment loop
+research-loop list                     # list all sessions
+research-loop resume <session-id>      # resume a paused session
+research-loop export                   # export .research bundle
+research-loop mcp serve                # start MCP bridge server
+```
+
 ## Philosophy
 
 - **Researcher in control** — the agent proposes, you approve, the agent executes
@@ -128,31 +124,20 @@ Sessions are resumable. Bundles are portable. Any agent can resume from `lab_not
 - **Persist everything** — lab notebook accumulates every decision and finding
 - **Learn, don't just search** — understanding deeply is part of the research process
 
-## Go CLI reference
+## What's coming
 
-```bash
-research-loop init                          # configure LLM backend
-research-loop start <arxiv-url>             # ingest paper, extract hypothesis
-research-loop loop start                    # start experiment loop
-research-loop hand activate experimenter    # activate a Hand
-research-loop resume ./bundle.research      # resume from a bundle
-research-loop export                        # export .research bundle
-```
+Fellows (autonomous scheduled agents), the full 4-pane TUI, PDF ingestion pipeline, MCP bridge improvements, and the bundle registry are in active development. See [ROADMAP.md](ROADMAP.md) for the full plan.
 
 ## Contributing
 
 Skills live directly in this repository. To contribute:
 
 1. Fork the repository
-2. Create a branch for your skill or Hand
+2. Create a branch for your skill or Fellow
 3. Follow the guide in `CONTRIBUTING.md`
 4. Submit a PR
 
-See `CONTRIBUTING.md` for the complete guide, including skill writing rules, Hand manifest format, and commit conventions.
-
-## Roadmap
-
-See `ROADMAP.md` for the full phased plan through v1.0, including the Deep Learner Hand, 4-pane TUI, MCP bridge, and bundle registry.
+See `CONTRIBUTING.md` for the complete guide, including skill writing rules, Fellow manifest format, and commit conventions.
 
 ## Updating
 
