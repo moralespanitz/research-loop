@@ -33,6 +33,7 @@ type setupVerifyMsg struct {
 }
 type cliProbeMsg struct {
 	cliPath string
+	version string
 	err     error
 }
 
@@ -70,12 +71,12 @@ func newSetupModel(workspace string) setupModel {
 
 // ─── Commands ────────────────────────────────────────────────────────────────
 
-// probeCLI runs a live liveness check against the local `claude` binary.
+// probeCLI checks the local `claude` binary exists and reports its version.
 // This is the Paperclip approach: no OAuth, no browser — just verify the CLI works.
 func probeCLI() tea.Cmd {
 	return func() tea.Msg {
 		result := auth.ClaudeProbe()
-		return cliProbeMsg{cliPath: result.CLIPath, err: result.Err}
+		return cliProbeMsg{cliPath: result.CLIPath, version: result.Version, err: result.Err}
 	}
 }
 
@@ -192,12 +193,16 @@ func (m setupModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.state = setupFailed
 			return m, nil
 		}
-		// Probe passed — save config
+		// Probe passed — save config (store "path::version" as value)
 		m.cliPath = msg.cliPath
+		value := msg.cliPath
+		if msg.version != "" {
+			value = msg.cliPath + "::" + msg.version
+		}
 		m.state = setupVerifying
 		return m, tea.Batch(
 			m.spinner.Tick,
-			saveCLIProvider(m.workspace, m.provider, msg.cliPath),
+			saveCLIProvider(m.workspace, m.provider, value),
 		)
 
 	// ── Save result ───────────────────────────────────────────────────────────
@@ -321,11 +326,12 @@ func (m setupModel) viewCLIProbing() string {
 	title := primaryText.Render("Checking Claude Code CLI…")
 
 	steps := cardStyle.Render(
-		sectionTitle.Render("CLI PROBE") + "\n\n" +
-			spin + "  " + primaryText.Render("Running liveness check…") + "\n" +
-			muted.Render("   claude --print - --output-format stream-json --verbose") + "\n\n" +
-			dimText.Render("  Auth is handled by your existing `claude` setup.") + "\n" +
-			dimText.Render("  If this hangs, run `claude` first to complete auth."),
+		sectionTitle.Render("CLI CHECK") + "\n\n" +
+			spin + "  " + primaryText.Render("Locating `claude` binary…") + "\n\n" +
+			dimText.Render("  No browser, no OAuth — auth is handled by your") + "\n" +
+			dimText.Render("  existing `claude` setup (~/.claude/ or ANTHROPIC_API_KEY).") + "\n\n" +
+			muted.Render("  If `claude` is not found, install it first:") + "\n" +
+			lipgloss.NewStyle().Foreground(colorPrimary).Render("  https://claude.ai/download"),
 	)
 
 	hint := helpBar("esc", "cancel")
@@ -365,11 +371,18 @@ func (m setupModel) viewDone() string {
 		authMethod = "Local (no auth)"
 	}
 
+	cliLine := ""
+	if p.AuthType == auth.AuthTypeCLI && m.cliPath != "" {
+		cliLine = "\n" + muted.Render(fmt.Sprintf("  %-14s", "CLI path")) +
+			lipgloss.NewStyle().Foreground(colorText).Render(m.cliPath)
+	}
+
 	details := cardStyle.Copy().BorderForeground(colorSuccess).Render(
 		sectionTitle.Render("CONFIGURED") + "\n\n" +
 			muted.Render(fmt.Sprintf("  %-14s", "Provider")) + lipgloss.NewStyle().Foreground(colorText).Render(p.Name) + "\n" +
 			muted.Render(fmt.Sprintf("  %-14s", "Model")) + lipgloss.NewStyle().Foreground(colorPrimary).Render(p.DefaultModel) + "\n" +
-			muted.Render(fmt.Sprintf("  %-14s", "Auth")) + lipgloss.NewStyle().Foreground(colorText).Render(authMethod) + "\n" +
+			muted.Render(fmt.Sprintf("  %-14s", "Auth")) + lipgloss.NewStyle().Foreground(colorText).Render(authMethod) +
+			cliLine + "\n" +
 			muted.Render(fmt.Sprintf("  %-14s", "Credential")) + successText.Render("saved to .research-loop/credentials.toml"),
 	)
 

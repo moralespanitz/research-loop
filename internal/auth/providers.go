@@ -3,6 +3,7 @@
 package auth
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/exec"
@@ -111,40 +112,37 @@ func ProviderByID(id string) (Provider, bool) {
 // ClaudeProbeResult describes the outcome of a live claude CLI check.
 type ClaudeProbeResult struct {
 	CLIPath string // resolved path to the claude binary
+	Version string // e.g. "2.1.76 (Claude Code)"
 	Err     error  // nil = CLI found and responsive
 }
 
-// ClaudeProbe checks whether the `claude` CLI is installed and responsive.
-// It runs: claude --print - --output-format stream-json --verbose
-// with the prompt "Respond with hello." — the same liveness probe Paperclip uses.
+// ClaudeProbe checks whether the `claude` CLI is installed and can run.
+// Uses the Paperclip approach: no OAuth, no browser — just verify the binary
+// exists and responds. Two-step:
+//  1. Resolve the binary path via PATH
+//  2. Run `claude --version` (fast, no auth required) to confirm it works
+//
+// We intentionally do NOT run the full streaming probe in the TUI setup flow
+// because that would require a live API call and could open a browser if the
+// user hasn't authenticated yet. Auth is already handled by `~/.claude/` or
+// ANTHROPIC_API_KEY — the CLI will use those automatically when it's invoked
+// later by the research runner.
 func ClaudeProbe() ClaudeProbeResult {
 	path, err := exec.LookPath("claude")
 	if err != nil {
-		return ClaudeProbeResult{Err: fmt.Errorf("`claude` not found on PATH — install Claude Code CLI first: https://claude.ai/download")}
+		return ClaudeProbeResult{Err: fmt.Errorf("`claude` not found on PATH\n\nInstall Claude Code: https://claude.ai/download\nThen run `claude` once to authenticate.")}
 	}
 
-	cmd := exec.Command(path,
-		"--print", "-",
-		"--output-format", "stream-json",
-		"--verbose",
-	)
-	cmd.Stdin = strings.NewReader("Respond with hello.")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-	// Give it 30 seconds to respond
-	done := make(chan error, 1)
-	go func() { _, err := cmd.Output(); done <- err }()
-
-	select {
-	case err := <-done:
-		if err != nil {
-			return ClaudeProbeResult{CLIPath: path, Err: fmt.Errorf("claude CLI probe failed: %w", err)}
-		}
-	case <-time.After(30 * time.Second):
-		_ = cmd.Process.Kill()
-		return ClaudeProbeResult{CLIPath: path, Err: fmt.Errorf("claude CLI did not respond within 30 s — check your auth: run `claude` first")}
+	out, err := exec.CommandContext(ctx, path, "--version").Output()
+	if err != nil {
+		return ClaudeProbeResult{CLIPath: path, Err: fmt.Errorf("`claude --version` failed: %w\n\nMake sure Claude Code CLI is properly installed.", err)}
 	}
 
-	return ClaudeProbeResult{CLIPath: path}
+	version := strings.TrimSpace(string(out))
+	return ClaudeProbeResult{CLIPath: path, Version: version}
 }
 
 // ─── Credential storage ───────────────────────────────────────────────────────
