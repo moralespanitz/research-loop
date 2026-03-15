@@ -116,6 +116,62 @@ research-loop export                   # export .research bundle
 research-loop mcp serve                # start MCP bridge server
 ```
 
+## Usage
+
+Research Loop has no commands to memorize. You talk to Claude Code naturally and the right skill activates automatically.
+
+### Explore a new field
+
+> "I want to research policy compression and dopamine in transformers"
+
+The agent confirms the framing, then spawns 4 parallel searches (papers, repos, debates, open problems) and shows you a synthesis — not a dump. Everything is saved to the lab notebook.
+
+### Learn a concept deeply
+
+> "Explain rate-distortion theory"
+> "What is the information bottleneck?"
+> "I don't understand fast weight programmers"
+
+The `learn` skill activates. You get 5 core mental models one at a time, 3 field debates with both sides steel-manned, 5 diagnostic questions that test real understanding vs. memorization, and finally a Socratic reverse test where you explain it back. Every gap you reveal is logged.
+
+### Find a research gap
+
+> "What hasn't been tried in this space?"
+> "Is this idea worth pursuing?"
+
+The Carlini gate runs as a conversation — 4 questions (taste, uniqueness, impact, feasibility), one at a time, with scores saved to the lab notebook. Honest verdict at the end.
+
+### Test multiple angles in parallel
+
+> "Let's explore this from different angles"
+> "What are the different ways to approach this hypothesis?"
+
+4 hypothesis lanes run simultaneously — incremental improvement, cross-field transfer, assumption challenge, systems/efficiency. Weak lanes are killed early. You pick the one worth pursuing.
+
+### Run an experiment loop
+
+> "Let's start running experiments"
+> "I want to test this hypothesis against karpathy/autoresearch"
+
+The loop proposes a code mutation, applies it, runs the benchmark, and annotates the result causally. Repeat. The knowledge graph grows. You can interrupt at any time and resume exactly where you left off.
+
+### Resume a session
+
+> "Where did we leave off?"
+> "Resume my research on dopamine and fast weights"
+
+The lab notebook has everything. The agent reads it and picks up the thread — no re-exploration, no repeated work.
+
+### At any point, ask anything
+
+> "What does Carlini gate mean?"
+> "Explain what a hypothesis lane is"
+> "I don't understand the knowledge graph"
+
+The `learn` skill activates mid-flow and teaches the concept, then hands control back to whatever you were doing.
+
+---
+
 ## Philosophy
 
 - **Researcher in control** — the agent proposes, you approve, the agent executes
