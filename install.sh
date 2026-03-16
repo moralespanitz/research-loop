@@ -1,6 +1,7 @@
 #!/bin/sh
 # Research Loop — one-line installer
 # Usage: curl -fsSL https://raw.githubusercontent.com/research-loop/research-loop/main/install.sh | sh
+#    or: wget -qO- https://raw.githubusercontent.com/research-loop/research-loop/main/install.sh | sh
 #
 # Environment variables:
 #   VERSION   — install a specific version (e.g. VERSION=v0.2.0)
@@ -22,6 +23,17 @@ step()  { printf "  ${BOLD}->  %s${RESET}\n" "$1"; }
 ok()    { printf "  ${GREEN}ok${RESET}  %s\n" "$1"; }
 warn()  { printf "  ${YELLOW}!!${RESET}  %s\n" "$1"; }
 die()   { printf "  ${RED}ERR${RESET} %s\n" "$1"; exit 1; }
+
+# --- Detect HTTP client ----------------------------------------------------
+if command -v curl >/dev/null 2>&1; then
+  fetch()    { curl -fsSL "$1"; }
+  download() { curl -fsSL "$1" -o "$2"; }
+elif command -v wget >/dev/null 2>&1; then
+  fetch()    { wget -qO- "$1"; }
+  download() { wget -qO "$2" "$1"; }
+else
+  die "curl or wget required"
+fi
 
 printf "\n"
 printf "  ${BOLD}Research Loop${RESET} installer\n"
@@ -50,7 +62,7 @@ if [ -n "${VERSION:-}" ]; then
   step "Using requested version: $TAG"
 else
   step "Fetching latest release..."
-  TAG=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" 2>/dev/null \
+  TAG=$(fetch "https://api.github.com/repos/$REPO/releases/latest" 2>/dev/null \
     | grep '"tag_name"' | cut -d'"' -f4) || true
   if [ -z "$TAG" ]; then
     die "No releases found. Check https://github.com/$REPO/releases"
@@ -78,11 +90,11 @@ TMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_DIR"' EXIT
 
 step "Downloading $ARCHIVE..."
-curl -fsSL "$DOWNLOAD_URL" -o "$TMP_DIR/$ARCHIVE" \
+download "$DOWNLOAD_URL" "$TMP_DIR/$ARCHIVE" \
   || die "Download failed: $DOWNLOAD_URL"
 
 step "Verifying checksum..."
-curl -fsSL "$CHECKSUMS_URL" -o "$TMP_DIR/checksums.txt" \
+download "$CHECKSUMS_URL" "$TMP_DIR/checksums.txt" \
   || die "Could not download checksums"
 
 EXPECTED=$(grep "$ARCHIVE" "$TMP_DIR/checksums.txt" | awk '{print $1}')
