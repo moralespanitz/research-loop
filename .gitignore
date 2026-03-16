@@ -1,0 +1,23 @@
+# Go binary
+/research-loop
+
+# Node
+agent-sdk/node_modules/
+agent-sdk/dist/
+
+# macOS
+.DS_Store
+
+# Secrets
+.env
+*.env
+.research-loop/credentials.toml
+
+# Local reference repos — not part of this project
+superpowers/
+
+# Research Loop runtime state — local only, never commit
+.research-loop/sessions/
+.research-loop/explorations/
+.research-loop/discoveries/
+.research-loop/library/

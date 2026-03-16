@@ -1,0 +1,9 @@
+{
+  "name": "research-loop",
+  "version": "0.1.0",
+  "description": "Research Loop — Agent OS for scientific researchers. Explore problems, extract mental models, run parallel hypothesis lanes with Carlini gates.",
+  "author": {
+    "name": "Alexander Morales-Panitz"
+  },
+  "repository": "https://github.com/moralespanitz/research-loop"
+}
