@@ -37,17 +37,11 @@ cd research-loop
 
 The `.claude/` directory is picked up automatically by Claude Code. Open a new session and it's active.
 
-### Go binary
-
-```bash
-go install github.com/moralespanitz/research-loop/cmd/research-loop@latest
-research-loop init
-```
-
-Or with the install script:
+### Install the binary
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/moralespanitz/research-loop/main/install.sh | sh
+research-loop init
 ```
 
 ### Verify installation
