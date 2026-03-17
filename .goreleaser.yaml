@@ -1,0 +1,48 @@
+version: 2
+
+project_name: research-loop
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: research-loop
+    main: ./cmd/research-loop
+    binary: research-loop
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+archives:
+  - id: binary
+    format: binary
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+release:
+  github:
+    owner: research-loop
+    name: research-loop
+  draft: false
+  prerelease: auto
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - Merge pull request
+      - Merge branch

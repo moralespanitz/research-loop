@@ -167,7 +167,7 @@ func (f *OAuthFlow) handleCallback(w http.ResponseWriter, r *http.Request) {
 		desc := q.Get("error_description")
 		f.errCh <- fmt.Errorf("authorization denied: %s — %s", errParam, desc)
 		w.Header().Set("Content-Type", "text/html")
-		fmt.Fprintf(w, successPageHTML("Authorization denied. You can close this window.", false))
+		fmt.Fprint(w, successPageHTML("Authorization denied. You can close this window.", false))
 		return
 	}
 
@@ -183,13 +183,13 @@ func (f *OAuthFlow) handleCallback(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		f.errCh <- fmt.Errorf("token exchange failed: %w", err)
 		w.Header().Set("Content-Type", "text/html")
-		fmt.Fprintf(w, successPageHTML("Authentication failed. You can close this window.", false))
+		fmt.Fprint(w, successPageHTML("Authentication failed. You can close this window.", false))
 		return
 	}
 
 	// Success
 	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprintf(w, successPageHTML("Connected! You can close this window and return to Research Loop.", true))
+	fmt.Fprint(w, successPageHTML("Connected! You can close this window and return to Research Loop.", true))
 
 	f.resultCh <- result
 }

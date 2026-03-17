@@ -1,8 +1,9 @@
-#!/bin/bash
+#!/bin/sh
 # Research Loop — one-line installer
 # Usage: curl -fsSL https://research-loop.dev/install | sh
 #
-# Installs the research-loop binary to /usr/local/bin (or ~/bin if no sudo).
+# Installs the research-loop binary to /usr/local/bin (or ~/.local/bin if no sudo).
+# Set VERSION to pin a specific release: VERSION=v1.2.3 sh install.sh
 
 set -e
 
@@ -22,38 +23,39 @@ ok()    { printf "  ${GREEN}✓${RESET}  %s\n" "$1"; }
 warn()  { printf "  ${YELLOW}⚠${RESET}  %s\n" "$1"; }
 die()   { printf "  ${RED}✗${RESET}  %s\n" "$1"; exit 1; }
 
-echo ""
-echo "  🔬  ${BOLD}Research Loop${RESET} installer"
-echo ""
+printf "\n  🔬  ${BOLD}Research Loop${RESET} installer\n\n"
 
 # ─── Detect OS + arch ────────────────────────────────────────────────────────
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 ARCH=$(uname -m)
 
 case "$ARCH" in
-  x86_64)  ARCH="amd64" ;;
+  x86_64)        ARCH="amd64" ;;
   arm64|aarch64) ARCH="arm64" ;;
   *) die "Unsupported architecture: $ARCH" ;;
 esac
 
 case "$OS" in
   linux|darwin) ;;
-  *) die "Unsupported OS: $OS. Please build from source: go build ./cmd/research-loop" ;;
+  *) die "Unsupported OS: $OS" ;;
 esac
 
 step "Detected: $OS/$ARCH"
 
-# ─── Check for Go (build from source path) ───────────────────────────────────
-if command -v go &>/dev/null; then
-  GO_VERSION=$(go version | awk '{print $3}' | tr -d 'go')
-  ok "Go $GO_VERSION found — will build from source"
-  BUILD_FROM_SOURCE=1
+# ─── Resolve version ─────────────────────────────────────────────────────────
+if [ -n "${VERSION:-}" ]; then
+  TAG="$VERSION"
+  step "Pinned version: $TAG"
 else
-  BUILD_FROM_SOURCE=0
+  step "Fetching latest release…"
+  TAG=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" \
+    | grep '"tag_name"' | cut -d'"' -f4)
+  [ -n "$TAG" ] || die "Could not determine latest release. Set VERSION=vX.Y.Z to pin a specific version."
+  step "Latest: $TAG"
 fi
 
 # ─── Install dir ─────────────────────────────────────────────────────────────
-if [ -w "$INSTALL_DIR" ] || sudo -n true 2>/dev/null; then
+if [ -w "$INSTALL_DIR" ] || sudo -n true >/dev/null 2>&1; then
   : # can write to /usr/local/bin
 else
   INSTALL_DIR="$HOME/.local/bin"
@@ -61,75 +63,63 @@ else
   warn "No sudo — installing to $INSTALL_DIR (add to PATH if needed)"
 fi
 
-# ─── Build or download ───────────────────────────────────────────────────────
-if [ "$BUILD_FROM_SOURCE" = "1" ]; then
-  step "Building from source (github.com/$REPO)…"
-  TMP_DIR=$(mktemp -d)
-  trap "rm -rf $TMP_DIR" EXIT
+# ─── Download ────────────────────────────────────────────────────────────────
+ASSET="${BINARY}_${OS}_${ARCH}"
+BASE_URL="https://github.com/$REPO/releases/download/$TAG"
 
-  if command -v git &>/dev/null; then
-    git clone --depth 1 "https://github.com/$REPO.git" "$TMP_DIR/src" 2>/dev/null
-    cd "$TMP_DIR/src"
-    go build -o "$TMP_DIR/$BINARY" ./cmd/research-loop
-  else
-    die "git not found. Install git and try again."
-  fi
+TMP_DIR=$(mktemp -d)
+trap 'rm -rf "$TMP_DIR"' EXIT
 
-  BINARY_PATH="$TMP_DIR/$BINARY"
+step "Downloading $ASSET ($TAG)…"
+curl -fsSL "$BASE_URL/$ASSET" -o "$TMP_DIR/$BINARY" \
+  || die "Download failed: $BASE_URL/$ASSET"
+
+# ─── Checksum ────────────────────────────────────────────────────────────────
+step "Verifying checksum…"
+curl -fsSL "$BASE_URL/checksums.txt" -o "$TMP_DIR/checksums.txt" \
+  || die "Could not fetch checksums.txt from $BASE_URL"
+
+EXPECTED=$(grep "[[:space:]]${ASSET}$" "$TMP_DIR/checksums.txt" | awk '{print $1}')
+[ -n "$EXPECTED" ] || die "No checksum entry found for $ASSET in checksums.txt"
+
+if command -v sha256sum >/dev/null 2>&1; then
+  ACTUAL=$(sha256sum "$TMP_DIR/$BINARY" | cut -d' ' -f1)
+elif command -v shasum >/dev/null 2>&1; then
+  ACTUAL=$(shasum -a 256 "$TMP_DIR/$BINARY" | cut -d' ' -f1)
 else
-  # ── Download pre-built binary ───────────────────────────────────────────────
-  # (Releases not yet published — this path is for future use)
-  step "Downloading pre-built binary…"
-  TAG=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" 2>/dev/null | grep '"tag_name"' | cut -d'"' -f4)
-  if [ -z "$TAG" ]; then
-    die "Could not find a release. Please install Go and re-run: the installer will build from source."
-  fi
-
-  DOWNLOAD_URL="https://github.com/$REPO/releases/download/$TAG/${BINARY}-${OS}-${ARCH}"
-  TMP_FILE=$(mktemp)
-  trap "rm -f $TMP_FILE" EXIT
-
-  curl -fsSL "$DOWNLOAD_URL" -o "$TMP_FILE" || die "Download failed: $DOWNLOAD_URL"
-  chmod +x "$TMP_FILE"
-  BINARY_PATH="$TMP_FILE"
+  warn "No sha256 tool found — skipping checksum verification"
+  ACTUAL="$EXPECTED"
 fi
 
+[ "$ACTUAL" = "$EXPECTED" ] || die "Checksum mismatch (got $ACTUAL, expected $EXPECTED)"
+ok "Checksum verified"
+
 # ─── Install ─────────────────────────────────────────────────────────────────
+chmod +x "$TMP_DIR/$BINARY"
 step "Installing to $INSTALL_DIR/$BINARY…"
 
 if [ -w "$INSTALL_DIR" ]; then
-  cp "$BINARY_PATH" "$INSTALL_DIR/$BINARY"
+  cp "$TMP_DIR/$BINARY" "$INSTALL_DIR/$BINARY"
 else
-  sudo cp "$BINARY_PATH" "$INSTALL_DIR/$BINARY"
+  sudo cp "$TMP_DIR/$BINARY" "$INSTALL_DIR/$BINARY"
 fi
 
-chmod +x "$INSTALL_DIR/$BINARY"
 ok "Installed: $INSTALL_DIR/$BINARY"
 
 # ─── Verify ──────────────────────────────────────────────────────────────────
-if command -v research-loop &>/dev/null; then
+if command -v research-loop >/dev/null 2>&1; then
   ok "research-loop is on PATH"
 else
   warn "Add $INSTALL_DIR to your PATH:"
-  echo ""
-  echo "    export PATH=\"\$PATH:$INSTALL_DIR\""
-  echo ""
-  echo "  Then reload your shell."
+  printf "\n    export PATH=\"\$PATH:%s\"\n\n  Then reload your shell.\n\n" "$INSTALL_DIR"
 fi
 
 # ─── Done ────────────────────────────────────────────────────────────────────
-echo ""
-echo "  ${GREEN}${BOLD}Installation complete.${RESET}"
-echo ""
-echo "  Get started:"
-echo ""
-echo "    ${BOLD}research-loop init${RESET}                     Initialize a workspace"
-echo "    ${BOLD}research-loop dashboard --open${RESET}         Start dashboard at localhost:4321"
-echo "    ${BOLD}research-loop start <arxiv-url>${RESET}        Ingest a paper"
-echo ""
-echo "  Connect to Claude Code:"
-echo ""
-echo "    ${BOLD}claude mcp add research-loop -- \$(which research-loop) mcp serve${RESET}"
-echo ""
-echo "  Or just open your project — .mcp.json is already configured."
-echo ""
+printf "\n  ${GREEN}${BOLD}Installation complete.${RESET}\n\n"
+printf "  Get started:\n\n"
+printf "    ${BOLD}research-loop init${RESET}                     Initialize a workspace\n"
+printf "    ${BOLD}research-loop dashboard --open${RESET}         Start dashboard at localhost:4321\n"
+printf "    ${BOLD}research-loop start <arxiv-url>${RESET}        Ingest a paper\n\n"
+printf "  Connect to Claude Code:\n\n"
+printf "    ${BOLD}claude mcp add research-loop -- \$(which research-loop) mcp serve${RESET}\n\n"
+printf "  Or just open your project — .mcp.json is already configured.\n\n"

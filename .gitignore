@@ -1,6 +1,10 @@
 # Go binary
 /research-loop
 
+# Nix
+.direnv/
+result
+
 # Node
 agent-sdk/node_modules/
 agent-sdk/dist/

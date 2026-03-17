@@ -99,7 +99,7 @@ func runDiscover(topic string, maxLanes, maxRunsPerLane int, repoDir string, gat
 	}
 
 	// Print summary
-	fmt.Println("\n\033[1m── Discovery Summary ──\033[0m\n")
+	fmt.Println("\n\033[1m── Discovery Summary ──\033[0m")
 	for _, lane := range orch.Lanes() {
 		fmt.Printf("  %s\n", lane.Summary())
 	}

@@ -292,7 +292,7 @@ Answer each dimension (0.0-1.0):
 
 TASTE: How important is this problem? Would solving it meaningfully change the field?
 UNIQUENESS: What is ONLY you can bring? (skills, timing, framing, cross-field)
-IMPACT: Best case — what's the conclusion beyond "X% improvement"?
+IMPACT: Best case — what's the conclusion beyond "X%% improvement"?
 FEASIBILITY: Can this be tested with single-GPU experiments in weeks?
 
 Then provide:

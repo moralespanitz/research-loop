@@ -48,6 +48,7 @@ Run 'research-loop <command> --help' for more information.`,
 		newMCPCmd(),
 		newDashboardCmd(),
 		newTUICmd(),
+		newSkillsCmd(),
 	)
 
 	return cmd

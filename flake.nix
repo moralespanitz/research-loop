@@ -1,0 +1,29 @@
+{
+  description = "Research Loop — development environment";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+  };
+
+  outputs = { self, nixpkgs, flake-utils }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
+      in {
+        devShells.default = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            go
+            gopls
+            gotools
+            go-tools
+            golangci-lint
+          ];
+
+          shellHook = ''
+            echo "Research Loop dev environment"
+            echo "Go $(go version | awk '{print $3}')"
+          '';
+        };
+      });
+}
