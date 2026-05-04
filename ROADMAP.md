@@ -16,6 +16,18 @@ The full conversational research workflow inside Claude Code — no commands req
 - [x] `discover` — 4 parallel hypothesis lanes with gates between stages
 - [x] `loop` — PROPOSE → MUTATE → BENCHMARK → ANNOTATE experiment cycle
 - [x] `execution` — result annotation, causal reasoning, continue/pivot/kill
+- [x] `bootstrap` — mandatory activation layer, skill-loading protocol, Red Flags, HARD-GATE enforcement
+- [x] `deep-research` — multi-phase deep research with subagent dispatch, provenance tracking, integrity verification
+- [x] `literature-review` — structured literature review with parallel search, evidence tables, quality scoring
+- [x] `replication` — reproduce published results with environment selection and integrity checks
+- [x] `autonomous-iteration` — Karpathy-style metric-driven optimization loop (plan/debug/fix/security/ship/scenario/predict/learn/reason/probe)
+- [x] `paper-pipeline` — 14-phase end-to-end paper generation pipeline from topic to submission-ready manuscript
+- [x] `experiment-sandbox` — sandboxed experiment execution (local, Docker, SSH, Colab) with harness templates
+- [x] `figure-agent` — publication-quality figure generation with style-matched conference templates
+- [x] `writing-papers` — standalone paper drafting from existing results (Carlini methodology)
+- [x] `review-prep` — submission preparation, rejection handling, resubmission evaluation
+- [x] `getting-started` — bootstrap entry point, skill catalog, mandatory workflow primer
+- [x] `autoresearch` — autonomous nanochat/GPT training experiments (karpathy/autoresearch)
 
 **Skill infrastructure**
 - [x] `<SUBAGENT-STOP>` — subagents skip advisor flow, execute tasks directly
@@ -23,6 +35,11 @@ The full conversational research workflow inside Claude Code — no commands req
 - [x] SessionStart hook — active session state injected automatically on every open
 - [x] Descriptions are triggering-condition-only (superpowers pattern)
 - [x] Subagent prompts are task-shaped (no more interception bug)
+- [x] Embedded skill copies — all skills mirrored in `internal/embed/claude/skills/` for distribution
+- [x] Embedded agent definitions — all agents mirrored in `internal/embed/claude/agents/`
+- [x] Embedded CLAUDE.md — full routing table, Red Flags, Priority Rules, HARD-GATE in embed
+- [x] 21 skills registered in routing tables — no naming conflicts, non-overlapping descriptions
+- [x] bootstrap/SKILL.md — complete skill inventory with SUBAGENT-STOP, EXTREMELY-IMPORTANT, Red Flags, Priority, HARD-GATE
 
 **Go binary**
 - [x] `research-loop init` — LLM backend configuration

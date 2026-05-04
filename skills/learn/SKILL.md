@@ -196,7 +196,7 @@ For each:
 Then ask:
 > "Any of these feel like the right thread to pull? Or do you want to go explore the literature now?"
 
-If they want to explore → load the `explore` skill.
+If they want deeper evidence on any open question → dispatch the researcher agent (`.claude/agents/researcher.md`) for targeted evidence gathering, then load the `explore` skill.
 If they want to find gaps → load the `idea-selection` skill.
 
 Append to lab_notebook.md:
@@ -207,6 +207,17 @@ Append to lab_notebook.md:
 3. ...
 Status: learning complete
 ```
+
+## Subagent Reference
+
+This skill may dispatch subagents for deeper evidence gathering during teaching:
+
+| Agent | File | When used |
+|-------|------|-----------|
+| researcher | `.claude/agents/researcher.md` | When the user wants deeper evidence on open questions, or when an expert-level explanation requires fetching specific papers, benchmarks, or technical details |
+| writer | `.claude/agents/writer.md` | When a summary of learned material should be drafted as a durable reference |
+
+The researcher agent encodes 6 integrity commandments, numbered evidence table format, source quality tiers (A/B/C/Reject), and context hygiene rules. Dispatch it when you need to anchor a teaching point in actual sources rather than model knowledge.
 
 ---
 

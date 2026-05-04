@@ -1,6 +1,8 @@
 # Research Loop
 
-Research Loop is a complete scientific research workflow for your coding agents, built on top of a set of composable "skills" and some initial instructions that make sure your agent uses them.
+Research Loop is a **zero-dependency Claude Code plugin** that gives your coding agent a complete scientific research workflow. It merges the best patterns from [Superpowers](https://github.com/obra/superpowers) (auto-triggering skill UX), [Feynman](https://github.com/getcompanion-ai/feynman) (research subagents), [Autoresearch](https://github.com/uditgoenka/autoresearch) (autonomous iteration), and [AutoResearchClaw](https://github.com/aiming-lab/AutoResearchClaw) (paper pipeline) — all into one seamless agent experience.
+
+21 composable skills. 4 specialist subagents. Zero dependencies. Clone and go.
 
 ## How it works
 
@@ -14,6 +16,10 @@ Next up, once you say "go", it launches a *subagent-driven experiment loop* — 
 
 When you want to understand something deeply, just say "explain X." The `learn` skill walks you through how experts actually think about a topic — not a summary, but the underlying reasoning structures: core mental models one at a time, the places where the field genuinely disagrees, questions that expose whether you understand or just recognize, and finally a reverse test where you explain it back. Every gap gets logged to the lab notebook.
 
+Need a paper? Say "write a paper on X" and the `paper-pipeline` skill drives a 14-phase pipeline from topic framing all the way to conference-formatted export.
+
+Need to optimize something? Say "optimize this metric" and the `autonomous-iteration` skill runs a Karpathy-style Modify → Verify → Keep/Discard loop with automatic rollback.
+
 There's a bunch more to it, but that's the core of the system. And because the skills trigger automatically, you don't need to do anything special. Your agent just has Research Loop.
 
 ## Sponsorship
@@ -26,76 +32,108 @@ Thanks!
 
 ## Installation
 
-### Claude Code (recommended)
+Research Loop is a **zero-dependency Claude Code plugin** — just like [Superpowers](https://github.com/obra/superpowers), it works by dropping skill files into your project. No binaries, no builds, no dependencies.
 
-Clone the repo into your research workspace:
+### Plugin install (recommended — no build required)
 
 ```bash
 git clone https://github.com/moralespanitz/research-loop
 cd research-loop
 ```
 
-The `.claude/` directory is picked up automatically by Claude Code. Open a new session and it's active.
+That's it. Open a new Claude Code session in this directory and the skills auto-activate.
 
-### Go binary
+### Plugin install into an existing project
+
+```bash
+git clone https://github.com/moralespanitz/research-loop /tmp/research-loop
+cp -r /tmp/research-loop/.claude /tmp/research-loop/CLAUDE.md /your/project/
+```
+
+### Install from the Claude Code marketplace
+
+```
+/plugin install research-loop
+```
+
+### Go binary (optional — for CLI users)
+
+A Go binary is available for users who want CLI tools (`research-loop init`, `research-loop start <arxiv-url>`, etc.):
 
 ```bash
 go install github.com/moralespanitz/research-loop/cmd/research-loop@latest
 research-loop init
 ```
 
-Or with the install script:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/moralespanitz/research-loop/main/install.sh | sh
-```
-
 ### Verify installation
 
-Open a new Claude Code session in the workspace and say anything research-related — "I want to explore transformer memory systems" or "explain policy compression." The agent should automatically load the relevant skill without you typing any command.
+Open a new Claude Code session in the workspace and say anything research-related — "I want to explore transformer memory systems" or "explain policy compression." The `bootstrap` skill loads automatically, then routes to the right sub-skill. You should see the agent announce which skill it's using.
 
-## The Basic Workflow
+## Skills
 
-1. **research-loop** — Activates when you mention research, a topic, papers, or experiments. Asks one question to confirm framing. Entry point for everything.
+Research Loop ships 21 skills organized by workflow layer. Skills auto-trigger — you just talk naturally and the right skill activates.
 
-2. **status** — Activates when you say "where are we", "what do we have", or "what should I do next". Renders the full decision tree: every gap found, every hypothesis evaluated, every lane alive or killed, every experiment pending or done — and one specific next decision. Updates `knowledge_graph.md` on every run.
+### Activation Layer
 
-3. **learn** — Activates when you say "explain", "what is", "I don't understand", or ask about any term. Builds the reasoning structures experts carry: mental models → field debates → diagnostic questions → reverse test. The difference between reading about something and actually understanding it.
+- **bootstrap** — Loads on every conversation start. Establishes the skill-loading protocol, Red Flags table to prevent rationalization, and priority rules. The foundation that makes the entire system work.
 
-4. **explore** — Activates when you want to map a field or find papers. Spawns 4 parallel search agents simultaneously (papers, repos, debates, open problems). Saves everything to the lab notebook. Presents a 3-sentence synthesis, not a data dump.
+### Core Research Workflow
 
-5. **idea-selection** — Activates when you want to find gaps or evaluate whether an idea is worth pursuing. Runs the conversational Carlini gate: 4 questions (taste, uniqueness, impact, feasibility), one at a time, scored and saved.
+1. **research-loop** — Entry point. Activates when you mention research, a topic, papers, or experiments. Asks one question to confirm framing. Routes to the right sub-skill.
+2. **status** — "Where are we?", "what do we have?", "what should I do next." Renders the full decision tree and updates the knowledge graph.
+3. **learn** — "Explain X", "what is Y", "I don't understand Z." Builds the reasoning structures experts carry: mental models → field debates → diagnostic questions → reverse test.
+4. **explore** — Parallel field mapping. 4 agents simultaneously search papers, repos, debates, and open problems. Saves everything to the lab notebook.
+5. **idea-selection** — Conversational Carlini gate: taste, uniqueness, impact, feasibility. One question at a time, scored and saved.
+6. **discover** — 4 parallel hypothesis lanes (incremental, cross-field, assumption challenge, systems/efficiency). Gates between stages. Kills weak lanes early.
+7. **plan** — Breaks work into concrete actions with file paths, verification steps, and time estimates.
+8. **loop** — PROPOSE → MUTATE → BENCHMARK → ANNOTATE experiment cycle. Living knowledge graph.
+9. **execution** — Result annotation, causal reasoning, continue/pivot/kill decisions.
 
-6. **discover** — Activates when you want to test multiple angles. Runs 4 parallel hypothesis lanes (incremental, cross-field transfer, assumption challenge, systems/efficiency). Applies Carlini gates between stages. Kills weak lanes early.
+### Deep Research & Literature
 
-7. **plan** — Activates when you have a selected route and need concrete tasks. Breaks work into specific actions with exact file paths, verification steps, and time estimates. Creates a TodoWrite checklist. Nothing vague.
+10. **deep-research** — 7-phase research protocol: Plan → Scale Decision → Gather Evidence (parallel researcher subagents) → Draft → Cite → Review → Deliver with provenance sidecar. Integrity commandments: no fabricated sources, URL-or-it-didn't-happen.
+11. **literature-review** — Parallel search across 3-4 angles, evidence table with A/B/C quality scoring, synthesis into topic clusters and research gaps, verifier dispatch for citation anchoring.
+12. **replication** — Protocol for reproducing published results: extract → plan → environment → execute with integrity checks → expected vs. observed comparison.
 
-8. **loop** — Activates when you have a hypothesis and want to run experiments. Writes the experiment plan and gets approval before running anything. Drives the PROPOSE → MUTATE → BENCHMARK → ANNOTATE cycle.
+### Autonomous Optimization
 
-9. **execution** — Activates when experiments complete. Annotates results causally, updates the lab notebook, and helps you decide: continue, pivot, or kill.
+13. **autonomous-iteration** — Karpathy-style Modify → Verify → Keep/Discard → Repeat loop. One change per iteration, atomic commits, automatic git revert on failure, mechanical verification only, safety guardrails, interactive setup gate. Supports 11 specialized sub-commands:
+    - **debug** — Scientific-method bug hunting
+    - **fix** — Autonomous error repair (test/type/lint/build)
+    - **security** — STRIDE + OWASP security audit with red-team personas
+    - **ship** — 8-phase universal shipping workflow
+    - **scenario** — 12-dimension scenario exploration
+    - **predict** — Multi-persona swarm prediction
+    - **learn** — Autonomous codebase documentation
+    - **reason** — Adversarial refinement with blind judge panel
+    - **probe** — Adversarial requirement interrogation
+    - **plan** — Interactive wizard for building optimization config
 
-**The agent checks for relevant skills before any response.** Mandatory workflows, not suggestions.
+### Paper Pipeline
 
-## What's Inside
+14. **paper-pipeline** — End-to-end 14-phase pipeline: Topic Init → Literature Collection → Screening → Knowledge Extraction → Hypothesis Generation → Synthesis → Experiment Design → Code Generation → Execution → Result Analysis → Paper Draft → Peer Review → Revision → Export/Publish. Human-in-the-loop gates at key decision points.
+15. **experiment-sandbox** — Four sandbox modes: local (venv), Docker (containerized), SSH remote, Colab. Code validation pipeline, compute budget enforcement, metric collection, deterministic reproducibility.
+16. **figure-agent** — Decision agent for figure type selection (code plots vs. architecture diagrams). Matplotlib/Seaborn generation with conference style presets. Iterative improvement loop with critic feedback.
 
-### Skills (shipping today)
+### Supporting
 
-**Learning**
-- **learn** — Builds expert reasoning structures: mental models, field debates, diagnostic questions, reverse test, gap tracking.
+17. **getting-started** — First-run orientation. Teaches the skill system, routing table, and how to interact with Research Loop.
+18. **review-prep** — Pre-submission checklist, methodology checks, reproducibility verification.
+19. **writing-papers** — Standalone paper drafting with conference template awareness (NeurIPS, ICML, ICLR).
+20. **autoresearch** — Karpathy's original nanochat/GPT autonano experiment protocol (train.py optimization).
 
-**Exploration**
-- **research-loop** — Entry point. Conversational advisor. Routes to the right skill based on what you say.
-- **explore** — Parallel field mapping. 4 agents simultaneously. Saves full results to lab notebook.
+## Research Subagents
 
-**Idea Development**
-- **idea-selection** — Conversational Carlini gate. Taste, uniqueness, impact, feasibility. One question at a time.
-- **discover** — Parallel hypothesis lanes. 4 angles. Gates between stages. Kills weak lanes early.
+Research Loop ships 4 specialist subagents for delegated research tasks:
 
-**Experiments**
-- **loop** — PROPOSE → MUTATE → BENCHMARK → ANNOTATE cycle. Living knowledge graph.
-- **execution** — Result annotation, causal reasoning, continue/pivot/kill decisions.
+- **researcher** — Evidence gatherer. Integrity commandments, numbered evidence table, source quality tiers (A/B/C/Reject), context hygiene.
+- **reviewer** — Structured peer review. FATAL/MAJOR/MINOR classification, inline annotations quoting exact passages.
+- **writer** — Evidence-only drafting. No fabrication, open questions section, claim sweep and provenance check before finishing.
+- **verifier** — Citation verification. URL checking, source anchoring, orphan detection, removal of unsupported claims.
 
-### Session persistence
+Subagents are invoked automatically by skills like `deep-research`, `literature-review`, and `paper-pipeline`. You don't call them directly — the workflow dispatches them.
+
+## Session Persistence
 
 Every session accumulates to a lab notebook:
 
@@ -108,18 +146,6 @@ Every session accumulates to a lab notebook:
 
 Sessions are resumable. Bundles are portable. Any agent can resume from `lab_notebook.md` alone.
 
-### Go CLI (shipping today)
-
-```bash
-research-loop init                     # configure LLM backend
-research-loop start <arxiv-url>        # ingest paper, extract hypothesis
-research-loop loop start               # start experiment loop
-research-loop list                     # list all sessions
-research-loop resume <session-id>      # resume a paused session
-research-loop export                   # export .research bundle
-research-loop mcp serve                # start MCP bridge server
-```
-
 ## Usage
 
 Research Loop has no commands to memorize. You talk to Claude Code naturally and the right skill activates automatically.
@@ -129,6 +155,30 @@ Research Loop has no commands to memorize. You talk to Claude Code naturally and
 > "I want to research policy compression and dopamine in transformers"
 
 The agent confirms the framing, then spawns 4 parallel searches (papers, repos, debates, open problems) and shows you a synthesis — not a dump. Everything is saved to the lab notebook.
+
+### Run deep research
+
+> "Do a deep research on mechanistic interpretability of mixture of experts"
+
+The agent creates a structured plan, spawns parallel researcher subagents, gathers evidence across papers and web, drafts a report with inline citations, runs a verifier pass, and delivers a final brief with provenance sidecar.
+
+### Write a paper
+
+> "Write a paper on sparse attention mechanisms for long-context transformers"
+
+The `paper-pipeline` skill activates and walks you through 14 phases: from topic framing, literature collection and hypothesis generation, through experiment design, code generation and execution, to paper drafting, peer review, revision, and export in conference format.
+
+### Optimize a metric autonomously
+
+> "Optimize the inference latency of my transformer. Metric: ms per token. Direction: lower."
+
+The `autonomous-iteration` skill activates. It asks for setup details (scope, verify command, guard command), then runs a Karpathy-style loop: modify → benchmark → keep or revert → repeat. Atomic commits, automatic rollback, mechanical verification.
+
+### Debug something systematically
+
+> "The API returns 500 on POST /users intermittently"
+
+The `autonomous-iteration` debug workflow activates. It runs a scientific-method investigation: hypothesize → test → prove/disprove → log → repeat until root cause is found.
 
 ### Learn a concept deeply
 
@@ -174,8 +224,6 @@ The lab notebook has everything. The agent reads it and picks up the thread — 
 
 The `learn` skill activates mid-flow and teaches the concept, then hands control back to whatever you were doing.
 
----
-
 ## Philosophy
 
 - **Researcher in control** — the agent proposes, you approve, the agent executes
@@ -183,16 +231,28 @@ The `learn` skill activates mid-flow and teaches the concept, then hands control
 - **Parallel by default** — 4 agents simultaneously, not sequentially
 - **Persist everything** — lab notebook accumulates every decision and finding
 - **Learn, don't just search** — understanding deeply is part of the research process
-
-## What's coming
-
-Fellows (autonomous scheduled agents), the full 4-pane TUI, PDF ingestion pipeline, MCP bridge improvements, and the bundle registry are in active development. See [ROADMAP.md](ROADMAP.md) for the full plan.
+- **Skills auto-trigger** — no commands to memorize, the agent routes based on what you say
 
 ## References
 
 - **Carlini gate** — [Nicholas Carlini, "How to win a best paper award"](https://nicholas.carlini.com/writing/2026/how-to-win-a-best-paper-award.html). The four axes (taste, uniqueness, impact, feasibility) come directly from his framework.
-- **learn skill** — inspired by [this thread](https://x.com/ihtesham2005/status/2030214970353602806) by Ihtesham Ali on the difference between reading a subject and understanding it.
-- **Skill architecture** — `<SUBAGENT-STOP>`, `<HARD-GATE>`, and the description conventions are borrowed from [Superpowers](https://github.com/obra/superpowers) by Jesse Vincent.
+- **Autoresearch** — [Andrej Karpathy's autoresearch](https://github.com/karpathy/autoresearch). The Modify → Verify → Keep/Discard loop concept.
+- **Superpowers** — [obra/superpowers](https://github.com/obra/superpowers) by Jesse Vincent. The skill architecture (`<SUBAGENT-STOP>`, `<HARD-GATE>`, Red Flags, bootstrap pattern).
+- **Feynman** — [getcompanion-ai/feynman](https://github.com/getcompanion-ai/feynman). Research subagent system with integrity commandments.
+- **Autoresearch (extended)** — [uditgoenka/autoresearch](https://github.com/uditgoenka/autoresearch). 11-command autonomous iteration framework.
+- **AutoResearchClaw** — [aiming-lab/AutoResearchClaw](https://github.com/aiming-lab/AutoResearchClaw). End-to-end paper pipeline with experiment sandbox.
+- **Superpowers skill architecture** — The description convention, priority rules, and Red Flags framework are adapted from Superpowers.
+
+## What's coming
+
+See [ROADMAP.md](ROADMAP.md) for the full plan. Highlights include:
+
+- **Fellows** — autonomous scheduled agents (Ingestor, Experimenter, Librarian, Scribe, Reviewer, Replicator, Deep Learner)
+- **Full 4-pane TUI** — dashboard, library, writer panes
+- **PDF ingestion pipeline** — full text extraction with mathematical notation
+- **Bundle registry** — `research-loop publish` / `research-loop search`
+- **Multi-paper sessions** — chain papers for cross-hypothesis synthesis
+- **Cost tracking** — real-time LLM API spend + GPU-hours
 
 ## Contributing
 

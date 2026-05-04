@@ -1,0 +1,18 @@
+{
+  "name": "research-loop-dev",
+  "description": "Development marketplace for Research Loop — Agent OS for scientific researchers",
+  "owner": {
+    "name": "Alexander Morales-Panitz"
+  },
+  "plugins": [
+    {
+      "name": "research-loop",
+      "description": "Research Loop — Agent OS for scientific researchers. Auto-triggering skills for deep research, literature review, autonomous experimentation, paper writing, and more.",
+      "version": "0.1.1",
+      "source": "./",
+      "author": {
+        "name": "Alexander Morales-Panitz"
+      }
+    }
+  ]
+}

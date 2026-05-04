@@ -13,6 +13,11 @@ Design ALL conditions upfront. Rank them. Run ONE at a time. Never propose the n
 
 # Loop Skill
 
+> **Complements `autonomous-iteration` skill.** Use `loop` for hypothesis-driven
+> PROPOSE→MUTATE→BENCHMARK→ANNOTATE cycles. Use `autonomous-iteration` for
+> metric-driven Modify→Verify→Keep/Discard→Repeat optimization loops.
+> See `skills/autonomous-iteration/` for the Karpathy-style optimization workflow.
+
 You are running a scientific iteration loop. Each experiment is a question. The answer shapes the next question. The ledger accumulates evidence.
 
 ## Phase 1 — Design all conditions, rank by information value

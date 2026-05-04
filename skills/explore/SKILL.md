@@ -50,35 +50,39 @@ Researcher notes: <anything they said about prior knowledge>
 
 ## Step 2 — Launch parallel searches
 
-Spawn ALL four simultaneously. Each prompt must start with "You are a research search agent. Do not ask questions. Search and return structured results immediately."
+Dispatch ALL four researcher subagents simultaneously. Each task references the researcher agent definition (`.claude/agents/researcher.md`) and must follow its integrity commandments (no fabricated sources, URL-or-it-didn't-happen, read-before-summarize), use the numbered evidence table format (ID, Source, URL, Key claim, Type, Confidence), and apply the source quality tiers (A = peer-reviewed papers/official docs, B = reputable secondary, C = accept with caveats).
 
 ```
-Agent 1 prompt:
-  You are a research search agent. Do not ask questions. Search and return structured results immediately.
+Agent 1 (researcher):
   Task: Find the top 10 most important papers on [topic].
   Use web search. For each paper return: title, year, authors, 1-sentence contribution.
   Prioritize foundational and recent (2020–2025) papers. Return a clean numbered list.
+  Use the numbered evidence table format from the researcher agent definition.
+  Save findings to .research-loop/sessions/<slug>/findings-papers.md.
 
-Agent 2 prompt:
-  You are a research search agent. Do not ask questions. Search and return structured results immediately.
+Agent 2 (researcher):
   Task: Find active GitHub repos and benchmarks for [topic].
   Use web search. For each repo return: name, URL, stars (if available), 1-sentence description.
-  Return 5–10 actively maintained repos.
+  Return 5–10 actively maintained repos. Use cited evidence table format.
+  Save findings to .research-loop/sessions/<slug>/findings-repos.md.
 
-Agent 3 prompt:
-  You are a research search agent. Do not ask questions. Search and return structured results immediately.
+Agent 3 (researcher):
   Task: Find 3 places where experts in [topic] fundamentally disagree.
   Use web search. For each debate: name it, state Side A's strongest argument, state Side B's strongest argument, explain why it matters.
+  Use evidence table format with numbered sources.
+  Save findings to .research-loop/sessions/<slug>/findings-debates.md.
 
-Agent 4 prompt:
-  You are a research search agent. Do not ask questions. Search and return structured results immediately.
+Agent 4 (researcher):
   Task: Find explicit open problems stated in the [topic] literature.
   Use web search. Look for "future work" sections, unsolved challenges, gaps mentioned by field leaders.
   For each gap: state the problem, cite where it appears, explain why it's hard.
-  Return 5–8 specific open problems.
+  Return 5–8 specific open problems. Use numbered evidence table format.
+  Save findings to .research-loop/sessions/<slug>/findings-gaps.md.
 ```
 
-Tell the user: `Searching papers, repos, debates, and open problems in parallel...`
+Tell the user: `Searching papers, repos, debates, and open problems in parallel using researcher agents...`
+
+IMPORTANT: Each dispatched subagent must follow the researcher agent's 6 integrity commandments and output format defined in `.claude/agents/researcher.md`. Key rules: every entry needs a URL, no fabricated sources, mark status honestly, triage before fetching full content, write findings to file progressively.
 
 ## Step 3 — Save everything, show synthesis
 
@@ -159,7 +163,17 @@ Say:
 >
 > Ready to find the gaps and run the Carlini gate? → `/gap` or just tell me which open problem interests you most."
 
+## Subagent Reference
+
+This skill dispatches the `researcher` subagent (`.claude/agents/researcher.md`) for parallel evidence gathering. The researcher agent definition encodes:
+- 6 integrity commandments (no fabrication, URL required, read-before-summarize)
+- Numbered evidence table format
+- Source quality tiers (A/B/C/Reject)
+- Context hygiene rules (progressively write to files, triage before fetching)
+- Coverage status tracking per question
+
 ## What NOT to do
 - Do NOT dump all papers at once
 - Do NOT skip saving to lab_notebook.md after each phase
 - Do NOT advance phases without user input
+- Do NOT dispatch subagents without adhering to researcher integrity commandments
