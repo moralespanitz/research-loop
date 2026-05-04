@@ -1,8 +1,6 @@
 # Research Loop
 
-Research Loop is a **zero-dependency Claude Code plugin** that gives your coding agent a complete scientific research workflow. It merges the best patterns from [Superpowers](https://github.com/obra/superpowers) (auto-triggering skill UX), [Feynman](https://github.com/getcompanion-ai/feynman) (research subagents), [Autoresearch](https://github.com/uditgoenka/autoresearch) (autonomous iteration), and [AutoResearchClaw](https://github.com/aiming-lab/AutoResearchClaw) (paper pipeline) — all into one seamless agent experience.
-
-21 composable skills. 4 specialist subagents. Zero dependencies. Clone and go.
+Research Loop is a **zero-dependency Claude Code plugin** that gives your coding agent a complete scientific research workflow. 21 composable skills, 4 specialist subagents, zero dependencies. Clone and go.
 
 ## How it works
 
@@ -32,7 +30,7 @@ Thanks!
 
 ## Installation
 
-Research Loop is a **zero-dependency Claude Code plugin** — just like [Superpowers](https://github.com/obra/superpowers), it works by dropping skill files into your project. No binaries, no builds, no dependencies.
+Research Loop is a **zero-dependency Claude Code plugin** — it works by dropping skill files into your project. No binaries, no builds, no dependencies.
 
 ### Plugin install (recommended — no build required)
 
@@ -236,12 +234,8 @@ The `learn` skill activates mid-flow and teaches the concept, then hands control
 ## References
 
 - **Carlini gate** — [Nicholas Carlini, "How to win a best paper award"](https://nicholas.carlini.com/writing/2026/how-to-win-a-best-paper-award.html). The four axes (taste, uniqueness, impact, feasibility) come directly from his framework.
-- **Autoresearch** — [Andrej Karpathy's autoresearch](https://github.com/karpathy/autoresearch). The Modify → Verify → Keep/Discard loop concept.
-- **Superpowers** — [obra/superpowers](https://github.com/obra/superpowers) by Jesse Vincent. The skill architecture (`<SUBAGENT-STOP>`, `<HARD-GATE>`, Red Flags, bootstrap pattern).
-- **Feynman** — [getcompanion-ai/feynman](https://github.com/getcompanion-ai/feynman). Research subagent system with integrity commandments.
-- **Autoresearch (extended)** — [uditgoenka/autoresearch](https://github.com/uditgoenka/autoresearch). 11-command autonomous iteration framework.
-- **AutoResearchClaw** — [aiming-lab/AutoResearchClaw](https://github.com/aiming-lab/AutoResearchClaw). End-to-end paper pipeline with experiment sandbox.
-- **Superpowers skill architecture** — The description convention, priority rules, and Red Flags framework are adapted from Superpowers.
+- **Autoresearch loop** — [Andrej Karpathy's autoresearch](https://github.com/karpathy/autoresearch). The Modify → Verify → Keep/Discard loop concept.
+- **learn skill** — inspired by [this thread](https://x.com/ihtesham2005/status/2030214970353602806) by Ihtesham Ali on the difference between reading a subject and understanding it.
 
 ## What's coming
 
